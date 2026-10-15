@@ -1,0 +1,1453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Regenera brings together distinctive places, aligned capital, operating expertise, and multidisciplinary capabilities to create regenerative wellness destinations.">
+<style>
+  html, body { margin: 0; }
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+</style>
+<title>Regenera</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Quicksand:wght@400;700&display=swap">
+<style>
+  /* Layout: one white field, the arch-and-sun mark dead centre, tagline settling beneath it.
+     The arch is a doorway: pressing it zooms the camera through the opening into the site. */
+  @font-face {
+    font-family: "Daikon";
+    src: url("fonts/Daikon-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Daikon";
+    src: url("fonts/Daikon-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-display: swap;
+  }
+  :root {
+    --paper: #ffffff;
+    --ink: #26292b;
+    --mist: #9a9fa2;      /* soft gray tagline */
+    --mist-soft: #c9cccd;
+    --focus: #5f6b70;
+    --paper2: #f6f4ef;   /* site paper, a hair warmer than the landing white */
+    --paper3: #ebe7dd;
+    --moss: #1f3a2f;     /* forest canopy */
+    --moss2: #2e4d40;
+    --sun: #c99653;      /* late light, used only for focus rings */
+    --line: #dcd7cb;
+    --text: #424a4c;
+    --serif: "Cormorant Garamond", "Cormorant", Georgia, "Times New Roman", serif;
+    --font-brand: "Daikon", "Quicksand", "Nunito", ui-rounded, system-ui, sans-serif;
+    color-scheme: light;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-brand);
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    touch-action: none;
+  }
+
+  #field {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+  }
+
+  .stage {
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    pointer-events: none;
+  }
+  .scene {
+    display: flex; flex-direction: column; align-items: center;
+    gap: clamp(18px, 3.2vh, 30px);
+    will-change: transform;
+  }
+  .scene.zooming {
+    transition: transform 1.5s cubic-bezier(.7, 0, .18, 1), opacity .4s ease 1.15s, filter .9s ease .45s;
+    opacity: 0;
+    filter: blur(6px);
+  }
+
+  .brand {
+    pointer-events: auto;
+    appearance: none; border: 0; background: none; padding: 8px; margin: 0;
+    color: inherit; font: inherit; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+    gap: clamp(22px, 4vh, 40px);
+    border-radius: 12px;
+    opacity: 0;
+  }
+  .brand:focus-visible { outline: 2px solid var(--focus); outline-offset: 10px; }
+  /* Logo arrives like a lens racking focus: soft, sharp, a slight overshoot, then settled. */
+  .brand.shown { opacity: 1; animation: rackFocus 2.8s cubic-bezier(.2, .7, .2, 1) both; }
+  @keyframes rackFocus {
+    0%   { opacity: 0;   filter: blur(28px); transform: scale(1.06); }
+    40%  { opacity: .85; filter: blur(7px);  transform: scale(1.015); }
+    68%  { opacity: 1;   filter: blur(0);    transform: scale(1); }
+    80%  { filter: blur(2.5px); }
+    100% { opacity: 1;   filter: blur(0);    transform: none; }
+  }
+  /* Each press pulls the logo briefly out of focus and back. */
+  .brand.refocus .mark, .brand.refocus .wordmark { animation: refocus .9s cubic-bezier(.2, .7, .2, 1); }
+  @keyframes refocus {
+    0% { filter: blur(0); }
+    22% { filter: blur(6px); }
+    100% { filter: blur(0); }
+  }
+  /* Hover: the logo goes fuzzy once, shimmers, then settles back into focus even if the
+     pointer stays on it. It plays again only after the pointer leaves and comes back. */
+  .brand.shown.fuzzing .mark, .brand.shown.fuzzing .wordmark { animation: fuzzOnce 2s cubic-bezier(.3, .6, .3, 1) both; }
+  @keyframes fuzzOnce {
+    0%   { filter: blur(0);     opacity: 1;   transform: translate(0, 0); }
+    18%  { filter: blur(6px);   opacity: .85; transform: translate(.6px, -.4px); }
+    32%  { filter: blur(8px);   opacity: .82; transform: translate(-.6px, .5px); }
+    46%  { filter: blur(5px);   opacity: .85; transform: translate(.5px, .4px); }
+    60%  { filter: blur(7px);   opacity: .85; transform: translate(-.4px, -.3px); }
+    100% { filter: blur(0);     opacity: 1;   transform: translate(0, 0); }
+  }
+
+  .mark { width: clamp(118px, 17vmin, 190px); height: auto; overflow: visible; display: block; }
+  .mark .sun {
+    transform-origin: 966px 790px;
+    transform-box: view-box;
+    transition: transform .9s cubic-bezier(.2, .8, .2, 1);
+  }
+  .brand.flare .sun { animation: flare 1.1s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes flare {
+    0% { transform: scale(1) rotate(0); }
+    30% { transform: scale(1.12) rotate(6deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .brand:hover .sun { transform: rotate(8deg); }
+
+  .wordmark {
+    font-weight: 400;
+    font-size: clamp(46px, 9vmin, 92px);
+    line-height: .9;
+    letter-spacing: .005em;
+  }
+
+  .tagline {
+    font-weight: 400;
+    font-size: clamp(11px, 1.55vmin, 14px);
+    letter-spacing: .42em;
+    padding-left: .42em; /* balance trailing tracking */
+    color: var(--mist);
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 1.2s ease, transform 1.4s cubic-bezier(.65, 0, .2, 1);
+  }
+  .tagline.shown { opacity: 1; }
+
+  .hint {
+    position: fixed; left: 0; right: 0;
+    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    text-align: center;
+    font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--mist-soft);
+    opacity: 0; transition: opacity 1.2s ease;
+    pointer-events: none;
+  }
+  .hint.shown { opacity: 1; }
+
+  /* ---------- The site behind the arch ----------
+     Layout: full-bleed film hero, then paper and moss bands on a 1180px column.
+     Serif display for statements, Daikon for labels and reading text. */
+  .inside {
+    position: fixed; inset: 0;
+    overflow-y: auto; overflow-x: hidden;
+    background: var(--paper2); color: var(--ink);
+    opacity: 0; transition: opacity .9s ease;
+    user-select: text; touch-action: auto;
+    scroll-behavior: smooth;
+    font-family: var(--font-brand);
+  }
+  .inside.shown { opacity: 1; }
+  .inside, .inside *, .inside *::before, .inside *::after { box-sizing: border-box; }
+  .inside img { display: block; max-width: 100%; }
+  .wrap {
+    max-width: 1180px; margin-inline: auto; width: 100%;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+  .inside section { scroll-margin-top: 72px; }
+  .inside :focus-visible { outline: 2px solid var(--sun); outline-offset: 3px; }
+
+  /* Nav */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+    padding-top: env(safe-area-inset-top, 0px);
+    color: #fff;
+    transition: background .45s ease, color .45s ease, box-shadow .45s ease;
+  }
+  .nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 76px; }
+  .nav.solid { background: color-mix(in srgb, var(--paper2) 94%, transparent); color: var(--ink); box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(10px); }
+  .logo-btn {
+    appearance: none; border: 0; background: none; color: inherit; font: inherit;
+    display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 4px; border-radius: 8px;
+  }
+  .logo-btn svg { width: 32px; height: auto; }
+  .logo-btn span { font-size: 24px; line-height: 1; }
+  .nav ul { display: flex; gap: 30px; list-style: none; margin: 0; padding: 0; }
+  .nav a { color: inherit; text-decoration: none; font-size: 13px; letter-spacing: .04em; opacity: .85; transition: opacity .2s; }
+  .nav a:hover { opacity: 1; }
+  .nav .pill {
+    border: 1px solid currentColor; padding: 10px 16px 10px 18px; border-radius: 999px;
+    font-size: 10.5px; letter-spacing: .24em; text-transform: uppercase; opacity: 1; white-space: nowrap;
+  }
+  .nav .pill .short { display: none; }
+  @media (max-width: 960px) { .nav ul { display: none; } }
+  @media (max-width: 520px) { .nav .pill .long { display: none; } .nav .pill .short { display: inline; } }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--font-brand); font-size: 11.5px; line-height: 1; letter-spacing: .24em; text-transform: uppercase;
+    padding: 17px 22px 17px 24px; border-radius: 999px; text-decoration: none; cursor: pointer;
+    border: 1px solid transparent; transition: background .25s, color .25s, border-color .25s, transform .25s;
+  }
+  .btn svg { width: 14px; height: 14px; transition: transform .25s; }
+  .btn:hover svg { transform: translateX(3px); }
+  .btn-light { background: #fff; color: var(--ink); }
+  .btn-light:hover { background: var(--paper3); }
+  .btn-ghost { border-color: rgba(255, 255, 255, .55); color: #fff; background: rgba(255, 255, 255, .04); }
+  .btn-ghost:hover { border-color: #fff; background: rgba(255, 255, 255, .12); }
+  .btn-moss { background: var(--moss); color: #fff; border: 0; }
+  .btn-moss:hover { background: var(--moss2); }
+
+  /* Hero film */
+  .hero {
+    position: relative; min-height: max(640px, 100svh);
+    display: flex; align-items: flex-end; overflow: hidden;
+    color: #fff; background: #17211d;
+  }
+  .film { position: absolute; inset: 0; margin: 0; }
+  .film figure { position: absolute; inset: 0; margin: 0; opacity: 0; transition: opacity 1.8s ease; }
+  .film figure.on { opacity: 1; }
+  .film img {
+    width: 100%; height: 100%; object-fit: cover; max-width: none;
+    transform-origin: var(--o, 50% 50%);
+    transform: scale(1.14);
+    transition: transform 0s linear 1.8s;
+  }
+  .film figure.on img { transform: scale(1.0); transition: transform 9s cubic-bezier(.25, .1, .25, 1); }
+  .hero::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(12, 18, 16, .5) 0%, rgba(12, 18, 16, 0) 26%, rgba(12, 18, 16, .1) 52%, rgba(12, 18, 16, .82) 100%),
+      linear-gradient(90deg, rgba(12, 18, 16, .5) 0%, rgba(12, 18, 16, 0) 66%);
+  }
+  .hero-in {
+    position: relative; z-index: 2;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 48px; align-items: end;
+    padding-block: 140px clamp(48px, 9vh, 92px);
+  }
+  .hero-copy { display: grid; gap: 26px; min-width: 0; }
+  .kicker { font-size: 11px; letter-spacing: .4em; text-transform: uppercase; margin: 0; }
+  .hero .kicker { opacity: .85; }
+  .hero h1 {
+    margin: 0; font-family: var(--serif); font-weight: 400;
+    font-size: clamp(44px, 6.6vw, 96px); line-height: .98; letter-spacing: -.012em;
+    max-width: 12.5ch; text-wrap: balance;
+  }
+  .hero p.lead { margin: 0; max-width: 56ch; font-size: clamp(15.5px, 1.25vw, 17.5px); line-height: 1.7; opacity: .92; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+  .chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; width: 210px; }
+  .chapters button {
+    appearance: none; background: none; border: 0; color: #fff; font: inherit; cursor: pointer; padding: 0;
+    width: 100%; display: grid; grid-template-columns: 30px 1fr; gap: 8px 10px; align-items: center; text-align: left;
+    font-size: 10.5px; letter-spacing: .26em; text-transform: uppercase; opacity: .5; transition: opacity .6s;
+  }
+  .chapters .n { font-variant-numeric: tabular-nums; letter-spacing: .1em; }
+  .chapters .bar { grid-column: 1 / -1; height: 1px; background: rgba(255, 255, 255, .25); position: relative; overflow: hidden; }
+  .chapters .bar i { position: absolute; inset: 0; background: #fff; transform-origin: left; transform: scaleX(0); }
+  .chapters li.on button { opacity: 1; }
+  .chapters li.on .bar i { transform: scaleX(1); transition: transform 7s linear; }
+  .hero .in { opacity: 0; transform: translateY(20px); transition: opacity 1.1s ease, transform 1.2s cubic-bezier(.2, .8, .2, 1); transition-delay: var(--d, 0s); }
+  .entered .hero .in { opacity: 1; transform: none; }
+  @media (max-width: 760px) {
+    .hero-in { grid-template-columns: 1fr; }
+    .chapters { display: none; }
+  }
+
+  /* Sections */
+  .sec { padding-block: clamp(84px, 11vw, 150px); }
+  .eyebrow2 { margin: 0 0 22px; font-size: 11px; letter-spacing: .4em; text-transform: uppercase; color: var(--moss2); }
+  .inside h2 {
+    margin: 0; font-family: var(--serif); font-weight: 400;
+    font-size: clamp(34px, 4.1vw, 58px); line-height: 1.06; letter-spacing: -.008em; text-wrap: balance;
+  }
+  .inside h3 { margin: 0; }
+  .body { margin: 0; font-size: 16.5px; line-height: 1.75; color: var(--text); max-width: 60ch; }
+  .body + .body { margin-top: 18px; }
+  .split { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: clamp(32px, 6vw, 88px); align-items: end; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; align-items: start; } }
+
+  /* Reveal on scroll: only content below the first screen starts hidden */
+  .rv { transition: opacity 1s ease, transform 1.1s cubic-bezier(.2, .8, .2, 1); transition-delay: var(--d, 0s); }
+  .arm .rv:not(.seen) { opacity: 0; transform: translateY(24px); }
+
+  /* How we work */
+  .steps {
+    list-style: none; margin: clamp(64px, 8vw, 96px) 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 32px; position: relative;
+  }
+  .steps::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 40px; height: 1px; background: var(--line);
+    transform-origin: left; transform: scaleX(0); transition: transform 1.8s cubic-bezier(.65, 0, .25, 1);
+  }
+  .steps.seen::before { transform: scaleX(1); }
+  .steps li { display: grid; gap: 14px; align-content: start; position: relative; min-width: 0; }
+  .steps .num { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--moss2); height: 26px; }
+  .steps .node {
+    width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--moss2); background: var(--paper2);
+    margin-bottom: 14px; transition: background .5s ease, transform .5s ease; transition-delay: calc(var(--i) * .28s + .3s);
+  }
+  .steps.seen .node { background: var(--moss); transform: scale(1.1); }
+  .steps h3 { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; font-weight: 700; color: var(--ink); line-height: 1.5; }
+  .steps p { margin: 0; font-size: 15px; line-height: 1.65; color: var(--text); }
+  @media (max-width: 900px) {
+    .steps { grid-template-columns: 1fr; gap: 34px; padding-left: 34px; }
+    .steps::before { top: 8px; bottom: 8px; left: 5px; right: auto; width: 1px; height: auto; transform-origin: top; transform: scaleY(0); }
+    .steps.seen::before { transform: scaleY(1); }
+    .steps .node { position: absolute; left: -34px; top: 4px; margin: 0; }
+    .steps .num { height: auto; }
+  }
+
+  /* Platform */
+  .platform { background: var(--moss); color: #fff; }
+  .platform .eyebrow2 { color: rgba(255, 255, 255, .6); }
+  .platform .body { color: rgba(255, 255, 255, .78); }
+  .plat-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(32px, 6vw, 80px); align-items: center; }
+  .constellation { position: relative; width: min(100%, 540px); aspect-ratio: 1; margin-inline: auto; max-width: 100%; }
+  .constellation svg.links { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .constellation svg.links line { stroke: rgba(255, 255, 255, .22); stroke-width: 1; vector-effect: non-scaling-stroke; transition: stroke .35s; }
+  .constellation svg.links circle { fill: rgba(255, 255, 255, .55); transition: fill .35s, r .35s; }
+  .constellation .core { position: absolute; left: 50%; top: 50%; width: 22%; transform: translate(-50%, -50%); color: #fff; }
+  .constellation .core svg { width: 100%; height: auto; display: block; }
+  .cap {
+    position: absolute; transform: translate(-50%, -50%);
+    appearance: none; background: none; border: 0; color: #fff; cursor: default;
+    font: inherit; font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; line-height: 1.55;
+    max-width: 124px; text-align: center; padding: 6px; border-radius: 6px;
+    transition: opacity .35s ease;
+  }
+  .constellation.focus .cap { opacity: .25; }
+  .constellation.focus .cap.on { opacity: 1; }
+  .constellation.focus svg.links line { stroke: rgba(255, 255, 255, .06); }
+  .constellation.focus svg.links line.on { stroke: rgba(255, 255, 255, .85); }
+  .constellation.focus svg.links circle { fill: rgba(255, 255, 255, .15); }
+  .constellation.focus svg.links circle.on { fill: #fff; }
+  .result {
+    margin: clamp(64px, 8vw, 100px) 0 0; padding-top: 40px; border-top: 1px solid rgba(255, 255, 255, .18);
+    display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 24px; align-items: baseline;
+  }
+  .result span { font-size: 11px; letter-spacing: .4em; text-transform: uppercase; color: rgba(255, 255, 255, .6); }
+  .result p { margin: 0; font-family: var(--serif); font-size: clamp(26px, 3vw, 40px); line-height: 1.2; text-wrap: balance; }
+  @media (max-width: 860px) {
+    .plat-grid { grid-template-columns: 1fr; }
+    .result { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 620px) {
+    .constellation { aspect-ratio: auto; display: flex; flex-wrap: wrap; gap: 8px; }
+    .constellation svg.links, .constellation .core { display: none; }
+    .cap { position: static; transform: none; max-width: none; border: 1px solid rgba(255, 255, 255, .25); border-radius: 999px; padding: 9px 14px; }
+  }
+
+  /* Beliefs */
+  .bel-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(32px, 7vw, 100px); align-items: center; }
+  .bel-photo { margin: 0; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 2px; max-width: 100%; }
+  .bel-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .bel-lead { margin: 0; font-size: 18px; line-height: 1.6; color: var(--text); max-width: 40ch; }
+  .motto {
+    margin: 22px 0 30px; font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: clamp(52px, 7vw, 104px); line-height: .95; color: var(--moss); letter-spacing: -.015em;
+  }
+  .principles {
+    list-style: none; margin: clamp(64px, 8vw, 100px) 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line);
+  }
+  .principles li { padding: 34px 28px 0; border-left: 1px solid var(--line); display: grid; gap: 12px; align-content: start; }
+  .principles li:first-child { border-left: 0; padding-left: 0; }
+  .principles svg { width: 28px; height: 28px; stroke: var(--moss); fill: none; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  .principles h3 { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; font-weight: 700; }
+  .principles p { margin: 0; font-size: 15px; line-height: 1.65; color: var(--text); }
+  @media (max-width: 900px) {
+    .bel-grid { grid-template-columns: 1fr; }
+    .bel-photo { aspect-ratio: 4 / 3; }
+    .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 34px; }
+    .principles li:nth-child(3) { border-left: 0; padding-left: 0; }
+  }
+  @media (max-width: 520px) {
+    .principles { grid-template-columns: 1fr; }
+    .principles li { border-left: 0; padding-left: 0; }
+  }
+
+  /* Wellness */
+  .wellness { background: var(--paper3); }
+  .well-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: clamp(28px, 5vw, 72px); align-items: center; margin-top: clamp(48px, 6vw, 80px); }
+  .wheel { width: 100%; height: auto; display: block; overflow: visible; }
+  .wheel .seg { fill: color-mix(in srgb, var(--moss) 10%, var(--paper2)); stroke: var(--paper3); stroke-width: 2; cursor: pointer; transition: fill .45s ease; }
+  .wheel .seg:hover { fill: color-mix(in srgb, var(--moss) 30%, var(--paper2)); }
+  .wheel .seg.on { fill: var(--moss); }
+  .wheel .seg:focus-visible { outline: none; stroke: var(--sun); stroke-width: 3; }
+  .wheel .segn { font-family: var(--serif); font-style: italic; font-size: 17px; fill: var(--moss2); pointer-events: none; transition: fill .45s; }
+  .wheel .segn.on { fill: #fff; }
+  .wheel .lbl { font-family: var(--font-brand); font-size: 13px; letter-spacing: 2.6px; fill: var(--mist); text-transform: uppercase; cursor: pointer; transition: fill .45s; }
+  .wheel .lbl.on { fill: var(--moss); font-weight: 700; }
+  .wheel .hub { fill: var(--paper2); stroke: color-mix(in srgb, var(--moss) 20%, transparent); }
+  .wheel .sunlines { stroke: var(--moss); stroke-width: 34; stroke-linecap: round; fill: none; }
+  .wheel .hubtxt { font-size: 11px; letter-spacing: 3px; fill: var(--moss); font-family: var(--font-brand); }
+  .dim-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; }
+  .dim-tabs button {
+    appearance: none; font: inherit; font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase;
+    padding: 9px 13px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--moss) 25%, transparent);
+    background: transparent; color: var(--moss); cursor: pointer; transition: background .3s, color .3s;
+  }
+  .dim-tabs button[aria-selected="true"] { background: var(--moss); color: #fff; border-color: var(--moss); }
+  .dim-n { margin: 0 0 10px; font-size: 11px; letter-spacing: .3em; color: var(--mist); font-variant-numeric: tabular-nums; }
+  .dim-panel h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(36px, 4vw, 52px); line-height: 1; color: var(--moss); margin-bottom: 16px; }
+  .dim-panel .body { animation: fadeUp .6s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .well-foot {
+    margin: clamp(56px, 7vw, 90px) 0 0; padding-top: 36px; border-top: 1px solid color-mix(in srgb, var(--moss) 18%, transparent);
+    font-family: var(--serif); font-size: clamp(22px, 2.4vw, 32px); line-height: 1.3; color: var(--ink); max-width: 46ch; text-wrap: balance;
+  }
+  @media (max-width: 900px) { .well-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .wheel .lbl { display: none; } }
+
+  /* Collaborate */
+  .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(20px, 3vw, 36px); margin-top: clamp(48px, 6vw, 80px); }
+  .card { display: grid; grid-template-rows: auto 1fr; background: #fff; border-radius: 3px; overflow: hidden; min-width: 0; }
+  .card figure { margin: 0; position: relative; aspect-ratio: 16 / 10; overflow: hidden; color: #fff; max-width: 100%; }
+  .card figure img { width: 100%; height: 100%; object-fit: cover; object-position: var(--p, 50% 50%); transition: transform 1.2s cubic-bezier(.2, .8, .2, 1); }
+  .card:hover figure img { transform: scale(1.04); }
+  .card figure::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(12, 18, 16, 0) 40%, rgba(12, 18, 16, .72) 100%); }
+  .card figcaption { position: absolute; left: 28px; right: 28px; bottom: 24px; z-index: 1; display: grid; gap: 8px; }
+  .card figcaption span { font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase; opacity: .85; }
+  .card figcaption h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(28px, 2.8vw, 38px); line-height: 1.05; }
+  .card-body { padding: 28px 28px 30px; display: grid; gap: 14px; align-content: start; }
+  .card-lead { margin: 0; font-family: var(--serif); font-size: 22px; line-height: 1.3; color: var(--ink); }
+  .card-body .body { font-size: 15px; line-height: 1.7; }
+  .card-cta {
+    margin-top: 8px; align-self: end; justify-self: start;
+    display: inline-flex; gap: 10px; align-items: center; color: var(--moss); text-decoration: none;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase; border-bottom: 1px solid currentColor; padding-bottom: 6px;
+  }
+  .card-cta svg { width: 13px; height: 13px; transition: transform .25s; }
+  .card-cta:hover svg { transform: translateX(3px); }
+  @media (max-width: 820px) { .cards { grid-template-columns: 1fr; } }
+
+  /* Contact */
+  .contact { background: #fff; }
+  .contact-grid { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: clamp(36px, 6vw, 96px); align-items: start; }
+  .mail { margin-top: 34px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+  .mail span { font-family: var(--serif); font-size: 24px; color: var(--moss); user-select: all; word-break: break-all; }
+  .mini-btn {
+    appearance: none; font: inherit; font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
+    border: 1px solid var(--line); background: none; color: var(--ink); padding: 8px 12px; border-radius: 999px; cursor: pointer;
+  }
+  .mini-btn:hover { border-color: var(--ink); }
+  form#inq { display: grid; gap: 18px; min-width: 0; }
+  fieldset.engage { border: 0; margin: 0 0 6px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+  fieldset.engage legend { padding: 0; margin-bottom: 14px; font-size: 11px; letter-spacing: .26em; text-transform: uppercase; color: var(--text); }
+  .chip { position: relative; }
+  .chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip span {
+    display: inline-block; padding: 11px 15px; border-radius: 999px; border: 1px solid var(--line);
+    font-size: 13.5px; color: var(--ink); cursor: pointer; transition: background .25s, color .25s, border-color .25s;
+  }
+  .chip span:hover { border-color: var(--moss2); }
+  .chip input:checked + span { background: var(--moss); border-color: var(--moss); color: #fff; }
+  .chip input:focus-visible + span { outline: 2px solid var(--sun); outline-offset: 2px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+  .fld { display: grid; gap: 8px; min-width: 0; }
+  .fld > span { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--text); }
+  .fld input, .fld textarea {
+    font: inherit; font-size: 16px; color: var(--ink); background: var(--paper2);
+    border: 1px solid var(--line); border-radius: 3px; padding: 14px 15px; width: 100%; min-width: 0;
+    transition: border-color .2s, background .2s;
+  }
+  .fld textarea { resize: vertical; min-height: 130px; line-height: 1.6; }
+  .fld input:focus, .fld textarea:focus { outline: none; border-color: var(--moss); background: #fff; }
+  .fld [aria-invalid="true"] { border-color: #a4452c; }
+  .form-err { margin: 0; color: #a4452c; font-size: 14px; }
+  .form-actions { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-top: 6px; }
+  .form-done { border: 1px solid var(--line); border-left: 3px solid var(--moss); padding: 22px 24px; display: grid; gap: 12px; background: var(--paper2); }
+  .form-done h3 { font-family: var(--serif); font-weight: 400; font-size: 28px; color: var(--moss); }
+  .form-done p { margin: 0; font-size: 15px; line-height: 1.65; color: var(--text); }
+  .form-done .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  @media (max-width: 860px) { .contact-grid { grid-template-columns: 1fr; } }
+
+
+  /* Sideways sections: the section is as tall as its track is wide; the pin sticks
+     to the top while vertical scroll drives the track from right to left. */
+  .hz { position: relative; background: var(--paper2); }
+  .hz-pin { position: relative; }
+  .hz-track {
+    position: relative; display: flex; align-items: center;
+    gap: clamp(28px, 4vw, 64px);
+    padding-left: max(20px, calc((100vw - 1180px) / 2 + 20px));
+    padding-right: max(20px, 10vw);
+    padding-top: 40px;
+    will-change: transform;
+  }
+  .hz-panel { flex: none; min-width: 0; }
+  .hz-intro { width: min(540px, 84vw); display: grid; gap: 24px; }
+  .hz-cue { margin: 6px 0 0; display: inline-flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--mist); }
+  .hz-cue svg { width: 14px; height: 14px; animation: nudge 1.8s ease-in-out infinite; }
+  @keyframes nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+
+  .step { width: min(330px, 74vw); display: grid; grid-template-rows: auto 30px auto auto; gap: 14px; position: relative; }
+  .step-n { font-family: var(--serif); font-style: italic; font-size: clamp(84px, 9vw, 132px); line-height: .85; color: var(--moss); opacity: .9; }
+  .step .node {
+    width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--moss2); background: var(--paper2);
+    align-self: center; position: relative; z-index: 1; transition: background .6s ease, transform .6s ease;
+  }
+  .step::before { content: ""; position: absolute; left: 0; right: calc(-1 * clamp(28px, 4vw, 64px)); height: 1px; background: var(--line); top: var(--line-y, 0); }
+  .step.seen .node { background: var(--moss); transform: scale(1.15); }
+  .step h3 { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; font-weight: 700; color: var(--ink); line-height: 1.5; }
+  .step p { margin: 0; font-size: 16px; line-height: 1.65; color: var(--text); max-width: 30ch; }
+
+  .hz-img { margin: 0; width: min(380px, 68vw); height: min(56vh, 520px); overflow: hidden; border-radius: 2px; }
+  .hz-img.tall { width: min(440px, 72vw); height: min(68vh, 640px); }
+  .hz-img img { width: 100%; height: 100%; object-fit: cover; max-width: none; transform: scale(1.18); will-change: transform; }
+
+  .hz .card { width: min(440px, 84vw); }
+  .hz-end { width: min(420px, 80vw); display: grid; gap: 28px; justify-items: start; }
+
+  .hz-hud { display: none; }
+
+  /* Pinned mode */
+  .hz.hz-on .hz-pin { position: sticky; top: 0; height: 100svh; overflow: hidden; display: flex; align-items: center; }
+  .hz.hz-on .hz-track { width: max-content; }
+  .hz.hz-on .hz .card, .hz.hz-on .card { height: min(calc(100svh - 200px), 700px); display: flex; flex-direction: column; }
+  .hz.hz-on .card figure { aspect-ratio: auto; flex: 1 1 auto; min-height: 130px; }
+  .hz.hz-on .card-body { flex: none; }
+  .hz.hz-on .hz-hud {
+    display: flex; align-items: center; gap: 16px;
+    position: absolute; left: max(20px, calc((100vw - 1180px) / 2 + 20px)); bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+    font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--mist);
+  }
+  .hz-bar { width: 160px; height: 1px; background: var(--line); position: relative; overflow: hidden; }
+  .hz-bar i { position: absolute; inset: 0; background: var(--moss); transform-origin: left; transform: scaleX(0); }
+  .hz-count { font-variant-numeric: tabular-nums; color: var(--ink); letter-spacing: .14em; }
+
+  /* Stacked fallback: short screens and reduced motion */
+  .hz:not(.hz-on) .hz-pin { padding-block: clamp(84px, 11vw, 150px); }
+  .hz:not(.hz-on) .hz-track {
+    flex-direction: column; align-items: stretch; gap: 40px; transform: none !important;
+    max-width: 1180px; margin-inline: auto; padding: 0 max(20px, env(safe-area-inset-right, 0px)) 0 max(20px, env(safe-area-inset-left, 0px));
+  }
+  .hz:not(.hz-on) .hz-panel { width: 100%; }
+  .hz:not(.hz-on) .step::before { display: none; }
+  .hz:not(.hz-on) .hz-img, .hz:not(.hz-on) .hz-img.tall { height: auto; aspect-ratio: 16 / 9; }
+  .hz:not(.hz-on) .hz-img img { transform: none !important; }
+  .hz:not(.hz-on) .hz-cue { display: none; }
+  @media (prefers-reduced-motion: reduce) { .hz-cue svg { animation: none; } }
+
+  /* Footer */
+  .foot { position: relative; color: #fff; background: #0f1916; overflow: hidden; }
+  .foot-img { position: absolute; inset: 0; }
+  .foot-img img { width: 100%; height: 100%; object-fit: cover; opacity: .55; max-width: none; }
+  .foot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 16, 14, .2), rgba(10, 16, 14, .75)); }
+  .foot-in { position: relative; z-index: 1; padding-block: clamp(90px, 12vw, 160px) 40px; display: grid; gap: 70px; }
+  .foot-motto { margin: 0; font-family: var(--serif); font-style: italic; font-size: clamp(40px, 5.5vw, 76px); line-height: 1; max-width: 12ch; }
+  .foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px; padding-top: 28px; border-top: 1px solid rgba(255, 255, 255, .2); }
+  .foot-row nav { display: flex; flex-wrap: wrap; gap: 24px; }
+  .foot-row a { color: rgba(255, 255, 255, .82); text-decoration: none; font-size: 13px; }
+  .foot-row a:hover { color: #fff; }
+  .foot-small { margin: 0; font-size: 12px; color: rgba(255, 255, 255, .55); letter-spacing: .06em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .inside { scroll-behavior: auto; }
+    .film img, .film figure.on img { transform: none !important; transition: none !important; }
+    .hero .in, .rv, .steps::before, .steps .node { transition: none !important; }
+    .arm .rv:not(.seen) { opacity: 1; transform: none; }
+    .chapters li.on .bar i { transition: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand, .tagline, .hint, .inside, .scene.zooming { transition: none !important; }
+    .brand.shown, .brand.refocus .mark, .brand.refocus .wordmark, .brand.shown.fuzzing .mark, .brand.shown.fuzzing .wordmark { animation: none !important; }
+    .scene.zooming { filter: none !important; }
+    .brand.flare .sun { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="field" aria-hidden="true"></canvas>
+
+<div class="stage">
+  <div class="scene" id="scene">
+    <button class="brand" id="brand" type="button" aria-label="Enter Regenera">
+      <svg class="mark" id="mark" viewBox="700 505 532 530" aria-hidden="true">
+        <path d="M737 999 V770 A229 229 0 0 1 1195 770 V999 Z"
+              fill="none" stroke="currentColor" stroke-width="28" stroke-linejoin="round"/>
+        <g class="sun" stroke="currentColor" stroke-width="28" stroke-linecap="round" fill="none">
+          <line x1="966" y1="790" x2="966" y2="632"/>
+          <line x1="808" y1="790" x2="1124" y2="790"/>
+          <polyline points="858,673 966,790 1074,673" stroke-linejoin="round"/>
+          <polyline points="858,908 966,790 1074,908" stroke-linejoin="round"/>
+          <circle cx="966" cy="790" r="22" fill="currentColor" stroke="none"/>
+        </g>
+      </svg>
+      <span class="wordmark">regenera</span>
+    </button>
+    <div class="tagline" id="tagline">Regenerative Destinations</div>
+  </div>
+</div>
+
+<div class="hint" id="hint">Move · Press and release · Drag to ripple · Tap the arch to enter</div>
+
+<div class="inside" id="inside" hidden>
+  <header class="nav" id="nav">
+    <div class="wrap">
+      <button class="logo-btn" id="back" type="button" aria-label="Regenera, back to the arch">
+        <svg viewBox="700 505 532 530" aria-hidden="true">
+          <path d="M737 999 V770 A229 229 0 0 1 1195 770 V999 Z" fill="none" stroke="currentColor" stroke-width="34" stroke-linejoin="round"/>
+          <g stroke="currentColor" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" fill="none">
+            <line x1="966" y1="790" x2="966" y2="632"/>
+            <line x1="808" y1="790" x2="1124" y2="790"/>
+            <polyline points="858,673 966,790 1074,673"/>
+            <polyline points="858,908 966,790 1074,908"/>
+          </g>
+        </svg>
+        <span>regenera</span>
+      </button>
+      <ul>
+        <li><a href="#how" data-jump>How we work</a></li>
+        <li><a href="#platform" data-jump>Platform</a></li>
+        <li><a href="#beliefs" data-jump>Beliefs</a></li>
+        <li><a href="#wellness" data-jump>Wellness</a></li>
+        <li><a href="#collaborate" data-jump>Collaborate</a></li>
+      </ul>
+      <a class="pill" href="#contact" data-jump><span class="long">Start a conversation</span><span class="short">Contact</span></a>
+    </div>
+  </header>
+
+  <section class="hero" id="top" aria-label="Introduction">
+    <div class="film" aria-hidden="true">
+      <figure class="on" style="--o: 30% 40%"><img src="img/coast.jpg" alt=""></figure>
+      <figure style="--o: 55% 65%"><img src="img/palms.jpg" alt=""></figure>
+      <figure style="--o: 30% 30%"><img src="img/ridge.jpg" alt=""></figure>
+      <figure style="--o: 55% 55%"><img src="img/path.jpg" alt=""></figure>
+    </div>
+    <div class="wrap hero-in">
+      <div class="hero-copy">
+        <p class="kicker in" style="--d:.1s">Regenerative destinations</p>
+        <h1 class="in" style="--d:.25s">Ready to be part of something extraordinary?</h1>
+        <p class="lead in" style="--d:.45s">Regenera brings together distinctive places, aligned capital, operating expertise, and multidisciplinary capabilities to create regenerative wellness destinations where nature, hospitality, culture, community, and well-being come together as a living ecosystem.</p>
+        <div class="ctas in" style="--d:.6s">
+          <a class="btn btn-light" href="#how" data-jump>Explore Regenera
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+          <a class="btn btn-ghost" href="#collaborate" data-jump>Partner with us
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+        </div>
+      </div>
+      <ol class="chapters in" style="--d:.8s" aria-label="Film chapters">
+        <li class="on"><button type="button" data-slide="0"><span class="n">01</span><span>Nature</span><span class="bar"><i></i></span></button></li>
+        <li><button type="button" data-slide="1"><span class="n">02</span><span>Place</span><span class="bar"><i></i></span></button></li>
+        <li><button type="button" data-slide="2"><span class="n">03</span><span>Well-being</span><span class="bar"><i></i></span></button></li>
+        <li><button type="button" data-slide="3"><span class="n">04</span><span>Connection</span><span class="bar"><i></i></span></button></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="hz" id="how" aria-label="How we work">
+    <div class="hz-pin">
+      <div class="hz-track">
+        <div class="hz-panel hz-intro">
+          <p class="eyebrow2">How we work</p>
+          <h2>We partner with land and property owners to transform distinctive places into regenerative wellness destinations.</h2>
+          <p class="body">Regenera brings together the strategy, design, capital, operators, and partnerships needed to move from vision to execution. Each project is independently structured while benefiting from the capabilities, relationships, and knowledge of the broader Regenera platform.</p>
+          <p class="hz-cue">Keep scrolling <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></p>
+        </div>
+        <article class="hz-panel step rv" data-step><span class="step-n">01</span><span class="node"></span><h3>Start with place</h3><p>Understand the land, ecology, culture, community, and potential.</p></article>
+        <figure class="hz-panel hz-img tall"><img src="img/coast.jpg" alt="Aerial view of a rocky headland and deep teal water" loading="lazy"></figure>
+        <article class="hz-panel step rv" data-step><span class="step-n">02</span><span class="node"></span><h3>Define the vision</h3><p>Create a destination where nature, wellness, hospitality, culture, and economics work together.</p></article>
+        <article class="hz-panel step rv" data-step><span class="step-n">03</span><span class="node"></span><h3>Assemble the ecosystem</h3><p>Bring together the capital, design, development, operators, and partners needed to execute.</p></article>
+        <figure class="hz-panel hz-img"><img src="img/palms.jpg" alt="Riders on horseback beneath coconut palms" loading="lazy"></figure>
+        <article class="hz-panel step rv" data-step><span class="step-n">04</span><span class="node"></span><h3>Develop and build</h3><p>Guide the project from feasibility and design through financing, development, and opening.</p></article>
+        <article class="hz-panel step rv" data-step><span class="step-n">05</span><span class="node"></span><h3>Activate and evolve</h3><p>Bring the destination to life and carry what we learn into future projects.</p></article>
+        <figure class="hz-panel hz-img tall"><img src="img/ridge.jpg" alt="A hiker on a mountain ridge at sunrise" loading="lazy"></figure>
+      </div>
+      <div class="hz-hud" aria-hidden="true">
+        <span class="hz-label">How we work</span>
+        <span class="hz-bar"><i></i></span>
+        <span class="hz-count">01 / 05</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec platform" id="platform">
+    <div class="wrap plat-grid">
+      <div class="rv">
+        <p class="eyebrow2">The platform</p>
+        <h2>One platform. Multidisciplinary capabilities.</h2>
+        <p class="body" style="margin-top:28px">Regenera integrates expertise across regenerative design, real estate development, capital and investment, hospitality, wellness and longevity, technology, operations, brand, culture, and community.</p>
+        <p class="body">Each destination draws on what it needs while strengthening the platform for what comes next.</p>
+      </div>
+      <div class="constellation rv" id="constellation" style="--d:.15s" aria-label="Regenera capabilities">
+        <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="core" aria-hidden="true">
+          <svg viewBox="790 615 352 310">
+            <g stroke="currentColor" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <line x1="966" y1="790" x2="966" y2="632"/>
+              <line x1="808" y1="790" x2="1124" y2="790"/>
+              <polyline points="858,673 966,790 1074,673"/>
+              <polyline points="858,908 966,790 1074,908"/>
+            </g>
+          </svg>
+        </div>
+        <button class="cap" type="button">Regenerative design</button>
+        <button class="cap" type="button">Real estate development</button>
+        <button class="cap" type="button">Capital &amp; investment</button>
+        <button class="cap" type="button">Hospitality</button>
+        <button class="cap" type="button">Wellness &amp; longevity</button>
+        <button class="cap" type="button">Technology</button>
+        <button class="cap" type="button">Operations</button>
+        <button class="cap" type="button">Brand</button>
+        <button class="cap" type="button">Culture</button>
+        <button class="cap" type="button">Community</button>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="result rv">
+        <span>The result</span>
+        <p>Wellness destinations designed to create lasting value for people, nature, communities, and investors.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec beliefs" id="beliefs">
+    <div class="wrap bel-grid">
+      <figure class="bel-photo rv"><img src="img/palms.jpg" alt="Two riders on horseback crossing a grassy clearing beneath tall coconut palms" loading="lazy"></figure>
+      <div class="rv" style="--d:.15s">
+        <p class="eyebrow2">What we believe</p>
+        <p class="bel-lead">We create places where people and nature thrive together, guided by a simple principle:</p>
+        <p class="motto">Give more than we take.</p>
+        <p class="body">Inspired by the Mother Tree, Regenera is designed as a living ecosystem where each destination strengthens the next through shared knowledge, relationships, and experience.</p>
+      </div>
+    </div>
+    <div class="wrap">
+      <ul class="principles">
+        <li class="rv" style="--d:0s">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14z"/><path d="M5 19l8-8"/></svg>
+          <h3>Stewardship</h3><p>Restore and protect the natural systems that sustain each place.</p>
+        </li>
+        <li class="rv" style="--d:.1s">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+          <h3>Well-being</h3><p>Create environments that support vitality, connection, and meaningful experience.</p>
+        </li>
+        <li class="rv" style="--d:.2s">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8.5" r="3"/><circle cx="16" cy="8.5" r="3"/><path d="M2.5 19.5c0-3.2 2.5-5.5 5.5-5.5s5.5 2.3 5.5 5.5M10.5 19.5c0-3.2 2.5-5.5 5.5-5.5s5.5 2.3 5.5 5.5"/></svg>
+          <h3>Culture</h3><p>Honor local identity, traditions, and community.</p>
+        </li>
+        <li class="rv" style="--d:.3s">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 21V11a7.5 7.5 0 0 1 15 0v10"/><path d="M9 21v-5a3 3 0 0 1 6 0v5"/></svg>
+          <h3>Adaptive design</h3><p>Create places that evolve with people, nature, and changing needs.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec wellness" id="wellness">
+    <div class="wrap">
+      <div class="split">
+        <div class="rv">
+          <p class="eyebrow2">Wellness</p>
+          <h2>Wellness in the fullest sense</h2>
+        </div>
+        <div class="rv" style="--d:.15s">
+          <p class="body">Wellness is not simply an amenity within a Regenera destination. It is embedded in how the entire place is conceived, designed, experienced, and sustained.</p>
+          <p class="body">We see well-being as a relationship between people, place, purpose, and community. Our destinations support six interconnected dimensions:</p>
+        </div>
+      </div>
+      <div class="well-grid">
+        <div class="rv"><svg class="wheel" id="wheel" viewBox="0 0 640 520" role="group" aria-label="Six dimensions of well-being"></svg></div>
+        <div class="dim-panel rv" style="--d:.15s">
+          <div class="dim-tabs" id="dimTabs" role="tablist" aria-label="Dimensions"></div>
+          <p class="dim-n" id="dimN">01 / 06</p>
+          <h3 id="dimName">Physical</h3>
+          <p class="body" id="dimText" aria-live="polite">Movement, nutrition, restorative sleep, preventive health, longevity, and connection with nature.</p>
+        </div>
+      </div>
+      <p class="well-foot rv">Nature, architecture, food, movement, learning, culture, community, creativity, restoration, and purpose reinforce one another as part of the wellness experience.</p>
+    </div>
+  </section>
+
+  <section class="hz" id="collaborate" aria-label="Ways to collaborate">
+    <div class="hz-pin">
+      <div class="hz-track">
+        <div class="hz-panel hz-intro">
+          <p class="eyebrow2">Ways to collaborate</p>
+          <h2>Regenera is built through collaboration.</h2>
+          <p class="body">We work with landowners, capital partners, operators, institutions, and specialists who can help bring distinctive destinations into existence.</p>
+          <p class="hz-cue">Keep scrolling <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></p>
+        </div>
+        <article class="hz-panel card rv" data-step>
+          <figure style="--p: 25% 50%"><img src="img/coast.jpg" alt="Aerial view of a rocky green headland meeting deep teal water, with a group of kayaks offshore" loading="lazy">
+            <figcaption><span>Landowners</span><h3>Bring your property</h3></figcaption></figure>
+          <div class="card-body">
+            <p class="card-lead">You have a remarkable place. We help determine what it could become and how to move it forward.</p>
+            <p class="body">For owners of land, estates, hotels, resorts, retreat properties, farms, and other properties suited for repositioning, Regenera can assess the opportunity, define the destination strategy, test feasibility, assemble the ecosystem, structure capital, and guide execution.</p>
+            <a class="card-cta" href="#contact" data-engage="property">Explore your property with Regenera <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+          </div>
+        </article>
+        <article class="hz-panel card rv" data-step>
+          <figure style="--p: 50% 55%"><img src="img/path.jpg" alt="A tree-lined path at golden hour with a cyclist and a runner crossing in the sunlight" loading="lazy">
+            <figcaption><span>Investors</span><h3>Capital partners</h3></figcaption></figure>
+          <div class="card-body">
+            <p class="card-lead">Invest in distinctive real assets where regenerative design, hospitality, wellness, and long-term value creation come together.</p>
+            <p class="body">We work with family offices, private investors, real estate groups, and impact-aligned capital partners to structure project-specific opportunities with defined governance, operating strategy, and economic and regenerative objectives.</p>
+            <a class="card-cta" href="#contact" data-engage="invest">Explore investment partnerships <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+          </div>
+        </article>
+        <article class="hz-panel card rv" data-step>
+          <figure style="--p: 50% 62%"><img src="img/palms.jpg" alt="Riders on horseback beneath coconut palms" loading="lazy">
+            <figcaption><span>Operators</span><h3>Operating partners</h3></figcaption></figure>
+          <div class="card-body">
+            <p class="card-lead">Bring an exceptional hospitality, wellness, longevity, food, education, agriculture, cultural, or experiential concept into a larger destination ecosystem.</p>
+            <p class="body">Regenera provides the surrounding development platform, destination strategy, physical environment, complementary partners, brand ecosystem, and infrastructure that can help strong operating concepts thrive.</p>
+            <a class="card-cta" href="#contact" data-engage="operator">Become an operating partner <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+          </div>
+        </article>
+        <article class="hz-panel card rv" data-step>
+          <figure style="--p: 40% 35%"><img src="img/ridge.jpg" alt="A hiker with a backpack standing on a mountain ridge at sunrise" loading="lazy">
+            <figcaption><span>Institutions &amp; specialists</span><h3>Institutional &amp; specialist partners</h3></figcaption></figure>
+          <div class="card-body">
+            <p class="body">We collaborate with foundations, universities, conservation organizations, public-sector partners, architects, designers, ecological and agricultural experts, technology providers, researchers, cultural producers, and other specialists on restoration, research, community outcomes, innovation, and destination-specific needs.</p>
+            <a class="card-cta" href="#contact" data-engage="institution">Explore other partnerships <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+          </div>
+        </article>
+        <div class="hz-panel hz-end">
+          <h2>Start a conversation</h2>
+          <a class="btn btn-moss" href="#contact" data-jump>Tell us how you would like to engage
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+        </div>
+      </div>
+      <div class="hz-hud" aria-hidden="true">
+        <span class="hz-label">Ways to collaborate</span>
+        <span class="hz-bar"><i></i></span>
+        <span class="hz-count">01 / 04</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec contact" id="contact">
+    <div class="wrap contact-grid">
+      <div class="rv">
+        <p class="eyebrow2">Start a conversation</p>
+        <h2>Tell us how you would like to engage.</h2>
+        <p class="body" style="margin-top:26px">We review each inquiry for fit with the Regenera platform and active destinations. If there is alignment, a member of our team will reach out to schedule an introductory conversation.</p>
+        <div class="mail">
+          <span id="mailAddr">hello@weareregenera.com</span>
+          <button class="mini-btn" type="button" id="copyMail">Copy email</button>
+        </div>
+      </div>
+      <form id="inq" class="rv" style="--d:.15s" novalidate>
+        <fieldset class="engage">
+          <legend>How would you like to engage? *</legend>
+          <label class="chip"><input type="radio" name="engage" id="e-property" value="I have a property"><span>I have a property</span></label>
+          <label class="chip"><input type="radio" name="engage" id="e-invest" value="I am interested in investing"><span>I am interested in investing</span></label>
+          <label class="chip"><input type="radio" name="engage" id="e-operator" value="I am an operator"><span>I am an operator</span></label>
+          <label class="chip"><input type="radio" name="engage" id="e-institution" value="I represent an institution"><span>I represent an institution</span></label>
+          <label class="chip"><input type="radio" name="engage" id="e-specialist" value="I am a specialist or collaborator"><span>I am a specialist or collaborator</span></label>
+          <label class="chip"><input type="radio" name="engage" id="e-other" value="Other"><span>Other</span></label>
+        </fieldset>
+        <div class="row2">
+          <label class="fld"><span>Name *</span><input id="f-name" name="name" autocomplete="name" required></label>
+          <label class="fld"><span>Organization</span><input id="f-org" name="org" autocomplete="organization"></label>
+        </div>
+        <div class="row2">
+          <label class="fld"><span>Email *</span><input id="f-email" name="email" type="email" autocomplete="email" required></label>
+          <label class="fld"><span>Location</span><input id="f-loc" name="location" placeholder="City, country, or property location"></label>
+        </div>
+        <label class="fld"><span>Brief description</span><textarea id="f-desc" name="description" rows="5" placeholder="Tell us about the place, the opportunity, or what you bring."></textarea></label>
+        <label class="fld"><span>Website or supporting link (optional)</span><input id="f-link" name="link" type="url" inputmode="url" placeholder="https://"></label>
+        <p class="form-err" id="formErr" role="alert" hidden></p>
+        <div class="form-actions">
+          <button class="btn btn-moss" type="submit">Send inquiry
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></button>
+        </div>
+        <div class="form-done" id="formDone" hidden>
+          <h3>Your inquiry is ready</h3>
+          <p>This preview is not connected to an inbox yet, so nothing has been sent. Copy your inquiry and email it to hello@weareregenera.com.</p>
+          <div class="row">
+            <button class="mini-btn" type="button" id="copyInq">Copy inquiry</button>
+            <button class="mini-btn" type="button" id="editInq">Edit</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="foot-img" aria-hidden="true"><img src="img/coast.jpg" alt="" loading="lazy"></div>
+    <div class="wrap foot-in">
+      <p class="foot-motto">Give more than we take.</p>
+      <div>
+        <div class="foot-row">
+          <span style="font-size:24px">regenera</span>
+          <nav aria-label="Footer">
+            <a href="#how" data-jump>How we work</a>
+            <a href="#platform" data-jump>Platform</a>
+            <a href="#beliefs" data-jump>Beliefs</a>
+            <a href="#wellness" data-jump>Wellness</a>
+            <a href="#collaborate" data-jump>Collaborate</a>
+            <a href="#contact" data-jump>Contact</a>
+          </nav>
+        </div>
+        <p class="foot-small" style="margin-top:18px">© 2026 Regenera · Regenerative destinations · hello@weareregenera.com</p>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canvas = document.getElementById('field');
+  const ctx = canvas.getContext('2d');
+  const scene = document.getElementById('scene');
+  const brand = document.getElementById('brand');
+  const tagline = document.getElementById('tagline');
+  const hint = document.getElementById('hint');
+  const inside = document.getElementById('inside');
+  const back = document.getElementById('back');
+  const mark = document.getElementById('mark');
+
+  const INK = [38, 41, 43];
+  let W = 0, H = 0, dpr = 1;
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  /* ---------- Intro: tagline first, logo fades in, tagline slides under ---------- */
+  function intro() {
+    // Park the tagline at the vertical centre of the screen, where the logo will sit.
+    const t = tagline.getBoundingClientRect();
+    const offset = (H / 2) - (t.top + t.height / 2);
+    tagline.style.transition = 'none';
+    tagline.style.transform = `translateY(${offset}px)`;
+    void tagline.offsetWidth;
+    tagline.style.transition = '';
+
+    if (reduce) {
+      tagline.style.transform = 'none';
+      tagline.classList.add('shown'); brand.classList.add('shown'); hint.classList.add('shown');
+      return;
+    }
+    setTimeout(() => tagline.classList.add('shown'), 250);
+    setTimeout(() => {
+      brand.classList.add('shown');
+      tagline.style.transform = 'translateY(0)';
+      pulse(W / 2, H / 2, 0.7);
+    }, 1900);
+    setTimeout(() => hint.classList.add('shown'), 4200);
+  }
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(intro));
+
+  /* ---------- Field: a grid of dots that behaves like the GitNexus graph ----------
+     Move the pointer and the dot under it becomes the "selected node": it grows 1.8x,
+     its neighbours stay at full strength, and every other dot drops to 25% strength
+     and 60% size. Release (or click) clears the selection: every dot snaps back to
+     full in one frame, and a bright wave rolls outward from that point. */
+  const BASE_A = 0.22, BASE_R = 0.85;     // resting dot: ink at 22%, 0.85px radius
+  const NEAR = 90;                         // neighbour radius around the pointer
+  const EDGE = 52;                         // links drawn from the selected dot
+  const BUCKETS = 24;
+  let xs, ys, ca, cr, n = 0;
+  function buildGrid() {
+    const gap = W < 640 ? 12 : 14;
+    const cols = Math.ceil(W / gap) + 1, rows = Math.ceil(H / gap) + 1;
+    const ox = (W - (cols - 1) * gap) / 2, oy = (H - (rows - 1) * gap) / 2;
+    n = cols * rows;
+    xs = new Float32Array(n); ys = new Float32Array(n);
+    ca = new Float32Array(n).fill(BASE_A); cr = new Float32Array(n).fill(BASE_R);
+    let i = 0;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) { xs[i] = ox + c * gap; ys[i] = oy + r * gap; i++; }
+    kick();
+  }
+
+  let px = -1e4, py = -1e4, selecting = false, down = false, lastMove = 0, edgeAmt = 0;
+  const waves = [];
+  let running = false, last = 0;
+
+  function pulse(x, y, strength = 1) {
+    if (reduce) return;
+    waves.push({ x, y, t0: performance.now(), dur: 1500, max: Math.hypot(W, H) * strength, kind: 'pulse' });
+    kick();
+  }
+  function ripple(x, y) {
+    if (reduce) return;
+    if (waves.length > 14) waves.shift();
+    waves.push({ x, y, t0: performance.now(), dur: 1100, max: 120, kind: 'ripple' });
+    kick();
+  }
+  function kick() { if (!running) { running = true; last = performance.now(); requestAnimationFrame(frame); } }
+
+  const easeOut = p => 1 - Math.pow(1 - p, 3);
+  const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const ink = a => `rgba(${INK[0]},${INK[1]},${INK[2]},${a})`;
+
+  function frame(now) {
+    const dt = Math.min(64, now - last); last = now;
+    if (selecting && !down && now - lastMove > 2600) selecting = false;   // idle: ease back
+    const k = reduce ? 1 : 1 - Math.pow(1 - 0.14, dt / 16.7);
+
+    // Live waves
+    const live = [];
+    for (let w = waves.length - 1; w >= 0; w--) {
+      const p = (now - waves[w].t0) / waves[w].dur;
+      if (p >= 1) { waves.splice(w, 1); continue; }
+      live.push({ ...waves[w], rad: easeOut(Math.max(0, p)) * waves[w].max, fade: 1 - p });
+    }
+
+    let moving = live.length > 0;
+    let sel = -1, selD = 1e9;
+    const buckets = Array.from({ length: BUCKETS }, () => []);
+
+    for (let i = 0; i < n; i++) {
+      const dx = xs[i] - px, dy = ys[i] - py;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      let ta = BASE_A, tr = BASE_R;
+      if (selecting) {
+        if (d < selD) { selD = d; sel = i; }
+        const t = 1 - d / NEAR;                                   // 1 at pointer, 0 at NEAR
+        const dimmed = smooth(NEAR * 0.85, NEAR * 1.45, d);         // 0 inside, 1 far away
+        ta = t > 0 ? BASE_A + 0.5 * t * t : BASE_A;
+        tr = t > 0 ? BASE_R * (1.3 + 0.5 * t * t * t) : BASE_R;
+        ta = ta * (1 - dimmed) + BASE_A * 0.25 * dimmed;
+        tr = tr * (1 - dimmed) + BASE_R * 0.6 * dimmed;
+      }
+      for (const w of live) {
+        const off = Math.sqrt((xs[i] - w.x) ** 2 + (ys[i] - w.y) ** 2) - w.rad;
+        if (w.kind === 'pulse') {
+          if (off > 110 || off < -110) continue;
+          const b = Math.exp(-((off / 36) ** 2)) * w.fade;
+          ta += b * 0.55; tr += b * 1.1;
+        } else {
+          if (off > 0 || off < -60 || w.rad + off > w.max) continue;
+          const b = Math.cos(off / 5.5) * Math.exp(-((off / 22) ** 2)) * w.fade;
+          ta += b * 0.35; tr += b * 0.75;
+        }
+      }
+      ca[i] += (ta - ca[i]) * k;
+      cr[i] += (tr - cr[i]) * k;
+      if (Math.abs(ta - ca[i]) > 0.002 || Math.abs(tr - cr[i]) > 0.01) moving = true;
+      const a = Math.max(0, Math.min(0.95, ca[i]));
+      buckets[Math.min(BUCKETS - 1, Math.round(a / 0.95 * (BUCKETS - 1)))].push(i);
+    }
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Links from the selected dot to its neighbours, like the brightened edges in GitNexus
+    edgeAmt += ((selecting ? 1 : 0) - edgeAmt) * k;
+    if (edgeAmt > 0.01 && sel >= 0) {
+      const sx = xs[sel], sy = ys[sel];
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < n; i++) {
+        const d = Math.hypot(xs[i] - sx, ys[i] - sy);
+        if (d === 0 || d > EDGE) continue;
+        ctx.strokeStyle = ink(0.16 * (1 - d / EDGE) * edgeAmt);
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(xs[i], ys[i]); ctx.stroke();
+      }
+      moving = moving || Math.abs((selecting ? 1 : 0) - edgeAmt) > 0.01;
+    }
+
+    for (let b = 0; b < BUCKETS; b++) {
+      const list = buckets[b];
+      if (!list.length || b === 0) continue;
+      ctx.fillStyle = ink(b / (BUCKETS - 1) * 0.95);
+      ctx.beginPath();
+      for (const i of list) {
+        let r = Math.max(0.3, cr[i]);
+        if (i === sel && selecting) r = Math.max(r, BASE_R * 1.8 * edgeAmt);
+        ctx.moveTo(xs[i] + r, ys[i]); ctx.arc(xs[i], ys[i], r, 0, Math.PI * 2);
+      }
+      ctx.fill();
+    }
+
+    if (moving || selecting) requestAnimationFrame(frame);
+    else running = false;
+  }
+
+  // Clear the selection: every dot jumps back to full in a single frame, then the wave.
+  function flash(x, y) {
+    selecting = false;
+    ca.fill(BASE_A); cr.fill(BASE_R); edgeAmt = 0;
+    pulse(x, y);
+    kick();
+  }
+
+  brand.addEventListener('animationend', e => {
+    if (e.animationName === 'refocus') brand.classList.remove('refocus');
+    if (e.animationName === 'fuzzOnce' && e.target.classList.contains('mark')) brand.classList.remove('fuzzing');
+  });
+  // One fuzz per visit: armed on enter, re-armed only after the pointer leaves.
+  let fuzzArmed = true;
+  brand.addEventListener('pointerenter', e => {
+    if (e.pointerType !== 'mouse' || !fuzzArmed || zoomed || reduce) return;
+    fuzzArmed = false;
+    brand.classList.remove('fuzzing'); void brand.offsetWidth; brand.classList.add('fuzzing');
+  });
+  brand.addEventListener('pointerleave', () => { fuzzArmed = true; });
+  function flare() {
+    brand.classList.remove('flare', 'refocus'); void brand.offsetWidth; brand.classList.add('flare', 'refocus');
+    brand.classList.add('shown');
+  }
+
+  let lastX = 0, lastY = 0;
+  addEventListener('pointermove', e => {
+    if (zoomed) return;
+    px = e.clientX; py = e.clientY;
+    if (e.pointerType === 'mouse' || down) { selecting = true; lastMove = performance.now(); kick(); }
+    if (down) {
+      const d = Math.hypot(px - lastX, py - lastY);
+      if (d > 18) { ripple(px, py); lastX = px; lastY = py; }
+    }
+  });
+  document.addEventListener('pointerout', e => { if (!e.relatedTarget) { selecting = false; kick(); } });
+  canvas.addEventListener('pointerdown', e => {
+    if (zoomed) return;
+    down = true; px = lastX = e.clientX; py = lastY = e.clientY;
+    selecting = true; lastMove = performance.now();
+    canvas.setPointerCapture(e.pointerId);
+    kick();
+  });
+  canvas.addEventListener('pointerup', e => {
+    if (!down) return;
+    down = false;
+    if (zoomed) return;
+    flash(e.clientX, e.clientY);
+    flare();
+  });
+  canvas.addEventListener('pointercancel', () => { down = false; selecting = false; kick(); });
+
+  buildGrid();
+  addEventListener('resize', buildGrid);
+  /* ---------- The site behind the arch ---------- */
+  const site = (() => {
+    const nav = document.getElementById('nav');
+    const hero = inside.querySelector('.hero');
+
+    // Film: four chapters, crossfading with a slow push-in on each.
+    const slides = [...inside.querySelectorAll('.film figure')];
+    const chaps = [...inside.querySelectorAll('.chapters li')];
+    let fi = 0, ft = null;
+    function setSlide(i) {
+      fi = i;
+      slides.forEach((s, k) => s.classList.toggle('on', k === i));
+      chaps.forEach((c, k) => {
+        c.classList.remove('on');
+        if (k === i) { void c.offsetWidth; c.classList.add('on'); }
+      });
+    }
+    function play() { clearInterval(ft); if (!reduce) ft = setInterval(() => setSlide((fi + 1) % slides.length), 7000); }
+    chaps.forEach((c, k) => c.querySelector('button').addEventListener('click', () => { setSlide(k); play(); }));
+
+    // Nav turns solid once the film is behind us.
+    inside.addEventListener('scroll', () => {
+      nav.classList.toggle('solid', inside.scrollTop > hero.offsetHeight - 90);
+    }, { passive: true });
+
+    // In-page links scroll the site container.
+    inside.addEventListener('click', e => {
+      const a = e.target.closest('a[data-jump], a[data-engage]');
+      if (!a) return;
+      const target = inside.querySelector(a.getAttribute('href'));
+      if (!target) return;
+      e.preventDefault();
+      if (a.dataset.engage) {
+        const r = document.getElementById('e-' + a.dataset.engage);
+        if (r) r.checked = true;
+      }
+      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      if (a.dataset.engage) setTimeout(() => document.getElementById('f-name').focus({ preventScroll: true }), reduce ? 0 : 700);
+    });
+
+    // Reveal on scroll. Anything already on screen is marked seen at once.
+    let io = null;
+    if ('IntersectionObserver' in window && !reduce) {
+      inside.classList.add('arm');
+      io = new IntersectionObserver(entries => {
+        entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('seen'); io.unobserve(en.target); } });
+      }, { root: inside, threshold: 0.14 });
+      inside.querySelectorAll('.rv').forEach(el => io.observe(el));
+    } else {
+      inside.querySelectorAll('.rv').forEach(el => el.classList.add('seen'));
+    }
+
+    // Platform: hovering a capability dims the rest, like selecting a node in the graph.
+    const con = document.getElementById('constellation');
+    const caps = [...con.querySelectorAll('.cap')];
+    const linkSvg = con.querySelector('svg.links');
+    let links = '';
+    caps.forEach((c, i) => {
+      const a = -Math.PI / 2 + i * 2 * Math.PI / caps.length;
+      const cos = Math.cos(a), sin = Math.sin(a);
+      c.style.left = (50 + 41 * cos) + '%';
+      c.style.top = (50 + 41 * sin) + '%';
+      links += `<line data-i="${i}" x1="${50 + 14 * cos}" y1="${50 + 14 * sin}" x2="${50 + 31 * cos}" y2="${50 + 31 * sin}"/>` +
+               `<circle data-i="${i}" cx="${50 + 31 * cos}" cy="${50 + 31 * sin}" r=".8"/>`;
+    });
+    linkSvg.innerHTML = links;
+    const focusCap = i => {
+      con.classList.toggle('focus', i >= 0);
+      caps.forEach((c, k) => c.classList.toggle('on', k === i));
+      linkSvg.querySelectorAll('[data-i]').forEach(el => el.classList.toggle('on', +el.dataset.i === i));
+    };
+    caps.forEach((c, i) => {
+      c.addEventListener('pointerenter', () => focusCap(i));
+      c.addEventListener('focus', () => focusCap(i));
+      c.addEventListener('pointerleave', () => focusCap(-1));
+      c.addEventListener('blur', () => focusCap(-1));
+    });
+
+    // Wellness wheel: six dimensions around the Regenera sun.
+    const DIMS = [
+      ['Physical', 'Movement, nutrition, restorative sleep, preventive health, longevity, and connection with nature.'],
+      ['Mental', 'Learning, curiosity, creativity, reflection, and cognitive well-being.'],
+      ['Spiritual', 'Meaning, purpose, contemplation, and deeper connection with oneself and the world.'],
+      ['Environmental', 'A healthy relationship with nature and positive stewardship of the ecosystems future generations will inherit.'],
+      ['Social', 'Belonging, shared experiences, community participation, and connection across cultures and generations.'],
+      ['Emotional', 'Space for expression, restoration, resilience, and personal growth.'],
+    ];
+    const wheel = document.getElementById('wheel');
+    const tabs = document.getElementById('dimTabs');
+    const NS = 'http://www.w3.org/2000/svg';
+    const CX = 320, CY = 260, R0 = 112, R1 = 176;
+    const pt = (r, deg) => [CX + r * Math.cos(deg * Math.PI / 180), CY + r * Math.sin(deg * Math.PI / 180)];
+    const mk = (tag, attrs, parent = wheel) => { const el = document.createElementNS(NS, tag); for (const k in attrs) el.setAttribute(k, attrs[k]); parent.appendChild(el); return el; };
+    const segs = [], nums = [], lbls = [], tabBtns = [];
+    DIMS.forEach(([name], i) => {
+      const mid = -90 + i * 60, a0 = mid - 30 + 1.4, a1 = mid + 30 - 1.4;
+      const [x0, y0] = pt(R1, a0), [x1, y1] = pt(R1, a1), [x2, y2] = pt(R0, a1), [x3, y3] = pt(R0, a0);
+      const seg = mk('path', {
+        d: `M${x0} ${y0} A${R1} ${R1} 0 0 1 ${x1} ${y1} L${x2} ${y2} A${R0} ${R0} 0 0 0 ${x3} ${y3} Z`,
+        class: 'seg', tabindex: '0', role: 'button', 'aria-label': name,
+      });
+      const [nx, ny] = pt((R0 + R1) / 2, mid);
+      const num = mk('text', { x: nx, y: ny + 6, 'text-anchor': 'middle', class: 'segn' }); num.textContent = String(i + 1).padStart(2, '0');
+      const [lx, ly] = pt(R1 + 30, mid);
+      const cos = Math.cos(mid * Math.PI / 180);
+      const lbl = mk('text', {
+        x: lx, y: ly + (Math.abs(cos) < .2 ? (ly < CY ? -2 : 12) : 5),
+        'text-anchor': Math.abs(cos) < .2 ? 'middle' : (cos > 0 ? 'start' : 'end'), class: 'lbl',
+      });
+      lbl.textContent = name;
+      segs.push(seg); nums.push(num); lbls.push(lbl);
+      const b = document.createElement('button');
+      b.type = 'button'; b.role = 'tab'; b.textContent = name; b.setAttribute('aria-selected', 'false');
+      tabs.appendChild(b); tabBtns.push(b);
+      const pick = () => { auto = false; setDim(i); };
+      seg.addEventListener('click', pick); lbl.addEventListener('click', pick); b.addEventListener('click', pick);
+      seg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    });
+    mk('circle', { cx: CX, cy: CY, r: R0 - 14, class: 'hub' });
+    const sun = mk('g', { class: 'sunlines', transform: `translate(${CX} ${CY - 16}) scale(.17) translate(-966 -790)` });
+    mk('line', { x1: 966, y1: 790, x2: 966, y2: 632 }, sun);
+    mk('line', { x1: 808, y1: 790, x2: 1124, y2: 790 }, sun);
+    mk('polyline', { points: '858,673 966,790 1074,673' }, sun);
+    mk('polyline', { points: '858,908 966,790 1074,908' }, sun);
+    const hubT = mk('text', { x: CX, y: CY + 44, 'text-anchor': 'middle', class: 'hubtxt' }); hubT.textContent = 'WELL-BEING';
+
+    const dimN = document.getElementById('dimN'), dimName = document.getElementById('dimName'), dimText = document.getElementById('dimText');
+    let cur = 0, auto = true;
+    function setDim(i) {
+      cur = i;
+      segs.forEach((s, k) => s.classList.toggle('on', k === i));
+      nums.forEach((s, k) => s.classList.toggle('on', k === i));
+      lbls.forEach((s, k) => s.classList.toggle('on', k === i));
+      tabBtns.forEach((b, k) => b.setAttribute('aria-selected', k === i ? 'true' : 'false'));
+      dimN.textContent = `${String(i + 1).padStart(2, '0')} / 06`;
+      dimName.textContent = DIMS[i][0];
+      dimText.textContent = DIMS[i][1];
+      dimText.style.animation = 'none'; void dimText.offsetWidth; dimText.style.animation = '';
+    }
+    setDim(0);
+    let wheelVisible = false;
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(es => { wheelVisible = es[0].isIntersecting; }, { root: inside, threshold: .4 }).observe(wheel);
+    }
+    setInterval(() => { if (auto && wheelVisible && !reduce && !inside.hidden) setDim((cur + 1) % DIMS.length); }, 4200);
+
+    // Inquiry form. No inbox is wired up yet, so it prepares the message instead of claiming to send it.
+    const form = document.getElementById('inq');
+    const err = document.getElementById('formErr');
+    const done = document.getElementById('formDone');
+    let summary = '';
+    const copy = (text, btn, label) => {
+      const ok = () => { btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = label; }, 1800); };
+      try { navigator.clipboard.writeText(text).then(ok, () => { btn.textContent = 'Select and copy above'; }); }
+      catch (_) { btn.textContent = 'Select and copy above'; }
+    };
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const engage = form.querySelector('input[name="engage"]:checked');
+      const name = document.getElementById('f-name'), email = document.getElementById('f-email');
+      const problems = [];
+      [name, email].forEach(f => f.removeAttribute('aria-invalid'));
+      if (!engage) problems.push('choose how you would like to engage');
+      if (!name.value.trim()) { problems.push('add your name'); name.setAttribute('aria-invalid', 'true'); }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) { problems.push('add a valid email address'); email.setAttribute('aria-invalid', 'true'); }
+      if (problems.length) {
+        err.textContent = 'Please ' + problems.join(', ') + '.';
+        err.hidden = false;
+        return;
+      }
+      err.hidden = true;
+      const v = id => document.getElementById(id).value.trim();
+      summary = [
+        `Engagement: ${engage.value}`, `Name: ${v('f-name')}`, `Organization: ${v('f-org') || '-'}`,
+        `Email: ${v('f-email')}`, `Location: ${v('f-loc') || '-'}`, `Link: ${v('f-link') || '-'}`, '', v('f-desc'),
+      ].join('\n');
+      done.hidden = false;
+      done.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
+    });
+    document.getElementById('copyInq').addEventListener('click', e => copy(summary, e.currentTarget, 'Copy inquiry'));
+    document.getElementById('editInq').addEventListener('click', () => { done.hidden = true; document.getElementById('f-desc').focus(); });
+    document.getElementById('copyMail').addEventListener('click', e => copy('hello@weareregenera.com', e.currentTarget, 'Copy email'));
+
+    // Sideways sections: scroll down, the section sticks, and the track slides right to left.
+    const pad2 = n => String(n).padStart(2, '0');
+    const hzs = [...inside.querySelectorAll('.hz')].map(sec => ({
+      sec,
+      pin: sec.querySelector('.hz-pin'),
+      track: sec.querySelector('.hz-track'),
+      bar: sec.querySelector('.hz-bar i'),
+      count: sec.querySelector('.hz-count'),
+      steps: [...sec.querySelectorAll('[data-step]')],
+      imgs: [...sec.querySelectorAll('.hz-img img')],
+      dist: 0, cur: 0, on: false,
+    }));
+    let hzRaf = 0;
+    function measureHz() {
+      if (inside.hidden) return;
+      hzs.forEach(h => {
+        h.sec.style.height = '';
+        const can = !reduce && inside.clientHeight >= 560;
+        h.sec.classList.toggle('hz-on', can);
+        h.on = can;
+        if (!can) { h.track.style.transform = ''; return; }
+        // Cards must fit the pinned height; otherwise this section stacks normally.
+        if ([...h.track.querySelectorAll('.card')].some(c => c.scrollHeight > c.clientHeight + 2)) {
+          h.on = false; h.sec.classList.remove('hz-on'); h.track.style.transform = ''; return;
+        }
+        h.steps.forEach(s => { const n = s.querySelector('.node'); if (n) s.style.setProperty('--line-y', (n.offsetTop + n.offsetHeight / 2) + 'px'); });
+        h.dist = Math.max(0, h.track.scrollWidth - h.pin.clientWidth);
+        h.sec.style.height = (h.pin.clientHeight + h.dist) + 'px';
+      });
+      tickHz(true);
+    }
+    function tickHz(snap) {
+      cancelAnimationFrame(hzRaf);
+      let moving = false;
+      hzs.forEach(h => {
+        if (!h.on) return;
+        const target = Math.min(1, Math.max(0, (inside.scrollTop - h.sec.offsetTop) / (h.dist || 1))) * h.dist;
+        h.cur = snap ? target : h.cur + (target - h.cur) * 0.14;
+        if (Math.abs(target - h.cur) > 0.4) moving = true; else h.cur = target;
+        h.track.style.transform = `translate3d(${-h.cur}px,0,0)`;
+        h.bar.style.transform = `scaleX(${h.dist ? h.cur / h.dist : 0})`;
+        const mid = h.cur + h.pin.clientWidth * 0.55;
+        let idx = 0;
+        h.steps.forEach((s, k) => { if (s.offsetLeft <= mid) idx = k; });
+        h.count.textContent = `${pad2(idx + 1)} / ${pad2(h.steps.length)}`;
+        const vw = h.pin.clientWidth;
+        h.imgs.forEach(img => {
+          const pnl = img.parentElement;
+          const off = pnl.offsetLeft + pnl.offsetWidth / 2 - h.cur - vw / 2;
+          img.style.transform = `translate3d(${off * -0.09}px,0,0) scale(1.18)`;
+        });
+      });
+      if (moving) hzRaf = requestAnimationFrame(() => tickHz(false));
+    }
+    inside.addEventListener('scroll', () => tickHz(false), { passive: true });
+    addEventListener('resize', measureHz);
+    inside.querySelectorAll('.hz img').forEach(img => { if (!img.complete) img.addEventListener('load', measureHz, { once: true }); });
+    if (document.fonts) document.fonts.ready.then(measureHz);
+
+    return {
+      enter() {
+        inside.scrollTop = 0;
+        nav.classList.remove('solid');
+        setSlide(0); play();
+        requestAnimationFrame(measureHz);
+        setTimeout(measureHz, 400);
+        requestAnimationFrame(() => requestAnimationFrame(() => inside.classList.add('entered')));
+      },
+      leave() { clearInterval(ft); inside.classList.remove('entered'); },
+    };
+  })();
+
+  /* ---------- Press the arch: zoom through the doorway ---------- */
+  let zoomed = false;
+  brand.addEventListener('click', () => {
+    if (zoomed) return;
+    zoomed = true;
+    hint.classList.remove('shown');
+    const m = mark.getBoundingClientRect();
+    const s = scene.getBoundingClientRect();
+    // A clear spot inside the arch, below the sun: (966, 950) in mark units.
+    const ox = m.left + m.width * ((966 - 700) / 532) - s.left;
+    const oy = m.top + m.height * ((950 - 505) / 530) - s.top;
+    scene.style.transformOrigin = `${ox}px ${oy}px`;
+    pulse(m.left + m.width / 2, m.top + m.height * 0.54, 1.2);
+
+    const show = () => {
+      inside.hidden = false;
+      requestAnimationFrame(() => inside.classList.add('shown'));
+      site.enter();
+      back.focus({ preventScroll: true });
+    };
+    if (reduce) { scene.style.opacity = 0; show(); return; }
+    scene.classList.add('zooming');
+    scene.style.transform = 'scale(70)';
+    setTimeout(show, 1350);
+  });
+
+  back.addEventListener('click', () => {
+    site.leave();
+    inside.classList.remove('shown');
+    setTimeout(() => {
+      inside.hidden = true;
+      scene.classList.remove('zooming');
+      scene.style.transition = 'none';
+      scene.style.transform = 'scale(1.06)';
+      scene.style.opacity = '0';
+      void scene.offsetWidth;
+      scene.style.transition = 'transform 1.1s cubic-bezier(.2,.8,.2,1), opacity .9s ease';
+      scene.style.transform = 'scale(1)';
+      scene.style.opacity = '1';
+      zoomed = false;
+      setTimeout(() => { scene.style.transition = ''; brand.focus({ preventScroll: true }); }, 1100);
+    }, reduce ? 0 : 600);
+  });
+})();
+</script>
+</body>
+</html>
