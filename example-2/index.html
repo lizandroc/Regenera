@@ -91,13 +91,13 @@
     opacity: 0;
   }
   .brand:focus-visible { outline: 2px solid var(--focus); outline-offset: 10px; }
-  /* Logo arrives sharp: it fades up and settles from a slight scale, with no blur. */
+  /* Logo arrives softly: a 4px blur sharpens to clear as it fades up and settles. */
   .brand.shown { opacity: 1; animation: rackFocus 2.8s cubic-bezier(.2, .7, .2, 1) both; }
   @keyframes rackFocus {
-    0%   { opacity: 0;   transform: scale(1.06); }
-    40%  { opacity: .85; transform: scale(1.015); }
-    68%  { opacity: 1;   transform: scale(1); }
-    100% { opacity: 1;   transform: none; }
+    0%   { opacity: 0;   filter: blur(4px);   transform: scale(1.06); }
+    40%  { opacity: .85; filter: blur(2px);   transform: scale(1.015); }
+    68%  { opacity: 1;   filter: blur(.5px);  transform: scale(1); }
+    100% { opacity: 1;   filter: blur(0);     transform: none; }
   }
   /* Each press pulls the logo briefly out of focus and back. */
   .brand.refocus .mark, .brand.refocus .wordmark { animation: refocus .9s cubic-bezier(.2, .7, .2, 1); }
