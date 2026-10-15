@@ -91,14 +91,13 @@
     opacity: 0;
   }
   .brand:focus-visible { outline: 2px solid var(--focus); outline-offset: 10px; }
-  /* Logo arrives like a lens racking focus: soft, sharp, a slight overshoot, then settled. */
+  /* Logo arrives sharp: it fades up and settles from a slight scale, with no blur. */
   .brand.shown { opacity: 1; animation: rackFocus 2.8s cubic-bezier(.2, .7, .2, 1) both; }
   @keyframes rackFocus {
-    0%   { opacity: 0;   filter: blur(28px); transform: scale(1.06); }
-    40%  { opacity: .85; filter: blur(7px);  transform: scale(1.015); }
-    68%  { opacity: 1;   filter: blur(0);    transform: scale(1); }
-    80%  { filter: blur(2.5px); }
-    100% { opacity: 1;   filter: blur(0);    transform: none; }
+    0%   { opacity: 0;   transform: scale(1.06); }
+    40%  { opacity: .85; transform: scale(1.015); }
+    68%  { opacity: 1;   transform: scale(1); }
+    100% { opacity: 1;   transform: none; }
   }
   /* Each press pulls the logo briefly out of focus and back. */
   .brand.refocus .mark, .brand.refocus .wordmark { animation: refocus .9s cubic-bezier(.2, .7, .2, 1); }
@@ -1116,7 +1115,7 @@
   });
   brand.addEventListener('pointerleave', () => { fuzzArmed = true; });
   function flare() {
-    brand.classList.remove('flare', 'refocus'); void brand.offsetWidth; brand.classList.add('flare', 'refocus');
+    brand.classList.remove('flare'); void brand.offsetWidth; brand.classList.add('flare');
     brand.classList.add('shown');
   }
 
