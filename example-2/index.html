@@ -974,13 +974,13 @@
      its neighbours stay at full strength, and every other dot drops to 25% strength
      and 60% size. Release (or click) clears the selection: every dot snaps back to
      full in one frame, and a bright wave rolls outward from that point. */
-  const BASE_A = 0.26, BASE_R = 0.43;     // resting dot: ink at 26%, 0.43px radius
+  const BASE_A = 0.22, BASE_R = 0.85;     // resting dot: ink at 22%, 0.85px radius
   const NEAR = 90;                         // neighbour radius around the pointer
   const EDGE = 52;                         // links drawn from the selected dot
   const BUCKETS = 24;
   let xs, ys, ca, cr, n = 0;
   function buildGrid() {
-    const gap = W < 640 ? 8 : 9;
+    const gap = W < 640 ? 12 : 14;
     const cols = Math.ceil(W / gap) + 1, rows = Math.ceil(H / gap) + 1;
     const ox = (W - (cols - 1) * gap) / 2, oy = (H - (rows - 1) * gap) / 2;
     n = cols * rows;
@@ -1047,11 +1047,11 @@
         if (w.kind === 'pulse') {
           if (off > 110 || off < -110) continue;
           const b = Math.exp(-((off / 36) ** 2)) * w.fade;
-          ta += b * 0.55; tr += b * 0.55;
+          ta += b * 0.55; tr += b * 1.1;
         } else {
           if (off > 0 || off < -60 || w.rad + off > w.max) continue;
           const b = Math.cos(off / 5.5) * Math.exp(-((off / 22) ** 2)) * w.fade;
-          ta += b * 0.35; tr += b * 0.38;
+          ta += b * 0.35; tr += b * 0.75;
         }
       }
       ca[i] += (ta - ca[i]) * k;
@@ -1067,7 +1067,7 @@
     edgeAmt += ((selecting ? 1 : 0) - edgeAmt) * k;
     if (edgeAmt > 0.01 && sel >= 0) {
       const sx = xs[sel], sy = ys[sel];
-      ctx.lineWidth = 0.35;
+      ctx.lineWidth = 0.5;
       for (let i = 0; i < n; i++) {
         const d = Math.hypot(xs[i] - sx, ys[i] - sy);
         if (d === 0 || d > EDGE) continue;
@@ -1081,13 +1081,13 @@
       const list = buckets[b];
       if (!list.length || b === 0) continue;
       ctx.fillStyle = ink(b / (BUCKETS - 1) * 0.95);
-      // Dots this small read the same as squares, and squares draw far faster than arcs.
+      ctx.beginPath();
       for (const i of list) {
-        let r = Math.max(0.18, cr[i]);
+        let r = Math.max(0.3, cr[i]);
         if (i === sel && selecting) r = Math.max(r, BASE_R * 1.8 * edgeAmt);
-        if (r > 1.1) { ctx.beginPath(); ctx.arc(xs[i], ys[i], r, 0, Math.PI * 2); ctx.fill(); }
-        else ctx.fillRect(xs[i] - r, ys[i] - r, r * 2, r * 2);
+        ctx.moveTo(xs[i] + r, ys[i]); ctx.arc(xs[i], ys[i], r, 0, Math.PI * 2);
       }
+      ctx.fill();
     }
 
     if (moving || selecting) requestAnimationFrame(frame);
