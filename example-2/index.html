@@ -403,7 +403,9 @@
   .wheel .seg { fill: color-mix(in srgb, var(--moss) 10%, var(--paper2)); stroke: var(--paper3); stroke-width: 2; cursor: pointer; transition: fill .45s ease; }
   .wheel .seg:hover { fill: color-mix(in srgb, var(--moss) 30%, var(--paper2)); }
   .wheel .seg.on { fill: var(--moss); }
-  .wheel .seg:focus-visible { outline: none; stroke: var(--sun); stroke-width: 3; }
+  /* No browser box on click or tap; keyboard users get a ring that follows the segment's shape. */
+  .wheel .seg:focus { outline: none; }
+  .wheel .seg:focus-visible { outline: none; stroke: var(--moss2); stroke-width: 3; }
   .wheel .segn { font-family: var(--serif); font-style: italic; font-size: 17px; fill: var(--moss2); pointer-events: none; transition: fill .45s; }
   .wheel .segn.on { fill: #fff; }
   .wheel .lbl { font-family: var(--font-brand); font-size: 13px; letter-spacing: 2.6px; fill: var(--mist); text-transform: uppercase; cursor: pointer; transition: fill .45s; }
