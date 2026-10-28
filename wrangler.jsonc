@@ -1,0 +1,14 @@
+// Cloudflare Worker config used when the build runs from the repository root.
+// It points at the same site and form handler as cloudflare/wrangler.jsonc.
+{
+  "name": "regenera",
+  "main": "cloudflare/worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./cloudflare/public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "keep_vars": true,
+  "observability": { "enabled": true }
+}
