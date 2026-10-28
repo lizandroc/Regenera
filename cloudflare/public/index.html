@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Regenera brings together distinctive places, aligned capital, operating expertise, and multidisciplinary capabilities to create regenerative wellness destinations.">
+<meta name="turnstile-sitekey" content="">
+<meta name="copyright" content="© 2026 Regenera. All rights reserved.">
+<style>
+  html, body { margin: 0; }
+  [hidden] { display: none !important; }
+</style>
+<title>Regenera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Quicksand:wght@400;700&display=swap">
+<style>
+  /* Layout: one white field, the arch-and-sun mark dead centre, tagline settling beneath it.
+     The arch is a doorway: pressing it zooms the camera through the opening into the site. */
+  @font-face {
+    font-family: "Daikon";
+    src: url("fonts/Daikon-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Daikon";
+    src: url("fonts/Daikon-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-display: swap;
+  }
+  :root {
+    --paper: #ffffff;
+    --ink: #26292b;
+    --mist: #9a9fa2;      /* soft gray tagline */
+    --mist-soft: #c9cccd;
+    --mist-text: #6b7174; /* readable gray: 4.5:1 or better on white and paper */
+    --focus: #5f6b70;
+    --paper2: #f6f4ef;   /* site paper, a hair warmer than the landing white */
+    --paper3: #ebe7dd;
+    --moss: #1f3a2f;     /* forest canopy */
+    --moss2: #2e4d40;
+    --sun: #c99653;      /* late light, used only for focus rings */
+    --line: #dcd7cb;
+    --text: #424a4c;
+    --forest: #14211c;   /* night canopy: the second dark band */
+    --sage: #b8ccb0;     /* lichen: accent on the dark bands */
+    --serif: "Cormorant Garamond", "Cormorant", Georgia, "Times New Roman", serif;
+    --font-brand: "Daikon", "Quicksand", "Nunito", ui-rounded, system-ui, sans-serif;
+    color-scheme: light;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-brand);
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    touch-action: none;
+  }
+
+  #field {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+  }
+
+  .stage {
+    color: var(--moss);
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    pointer-events: none;
+  }
+  .scene {
+    display: flex; flex-direction: column; align-items: center;
+    gap: clamp(18px, 3.2vh, 30px);
+    will-change: transform;
+  }
+  .scene.zooming {
+    transition: transform 1.5s cubic-bezier(.7, 0, .18, 1), opacity .4s ease 1.15s, filter .9s ease .45s;
+    opacity: 0;
+    filter: blur(6px);
+  }
+
+  .brand {
+    pointer-events: auto;
+    appearance: none; border: 0; background: none; padding: 8px; margin: 0;
+    color: inherit; font: inherit; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+    gap: clamp(22px, 4vh, 40px);
+    border-radius: 12px;
+    opacity: 0;
+  }
+  .brand:focus-visible { outline: 2px solid var(--focus); outline-offset: 10px; }
+  /* Logo arrives softly: a 4px blur sharpens to clear as it fades up and settles. */
+  .brand.shown { opacity: 1; animation: rackFocus 2.8s cubic-bezier(.2, .7, .2, 1) both; }
+  @keyframes rackFocus {
+    0%   { opacity: 0;   filter: blur(4px);   transform: scale(1.06); }
+    40%  { opacity: .85; filter: blur(2px);   transform: scale(1.015); }
+    68%  { opacity: 1;   filter: blur(.5px);  transform: scale(1); }
+    100% { opacity: 1;   filter: blur(0);     transform: none; }
+  }
+  /* Each press pulls the logo briefly out of focus and back. */
+  .brand.refocus .mark, .brand.refocus .wordmark { animation: refocus .9s cubic-bezier(.2, .7, .2, 1); }
+  @keyframes refocus {
+    0% { filter: blur(0); }
+    22% { filter: blur(6px); }
+    100% { filter: blur(0); }
+  }
+  /* Hover: the logo goes fuzzy once, shimmers, then settles back into focus even if the
+     pointer stays on it. It plays again only after the pointer leaves and comes back. */
+  .brand.shown.fuzzing .mark, .brand.shown.fuzzing .wordmark { animation: fuzzOnce 2s cubic-bezier(.3, .6, .3, 1) both; }
+  @keyframes fuzzOnce {
+    0%   { filter: blur(0);     opacity: 1;   transform: translate(0, 0); }
+    18%  { filter: blur(3px);   opacity: .93; transform: translate(.3px, -.2px); }
+    32%  { filter: blur(4px);   opacity: .91; transform: translate(-.3px, .25px); }
+    46%  { filter: blur(2.5px); opacity: .93; transform: translate(.25px, .2px); }
+    60%  { filter: blur(3.5px); opacity: .93; transform: translate(-.2px, -.15px); }
+    100% { filter: blur(0);     opacity: 1;   transform: translate(0, 0); }
+  }
+
+  .mark { width: clamp(118px, 17vmin, 190px); height: auto; overflow: visible; display: block; }
+  .mark .sun {
+    transform-origin: 966px 790px;
+    transform-box: view-box;
+    transition: transform .9s cubic-bezier(.2, .8, .2, 1);
+  }
+  .brand.flare .sun { animation: flare 1.1s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes flare {
+    0% { transform: scale(1) rotate(0); }
+    30% { transform: scale(1.12) rotate(6deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .brand:hover .sun { transform: rotate(8deg); }
+
+  .wordmark {
+    font-weight: 400;
+    font-size: clamp(46px, 9vmin, 92px);
+    line-height: .9;
+    letter-spacing: .005em;
+  }
+
+  .tagline {
+    font-weight: 400;
+    font-size: clamp(11px, 1.55vmin, 14px);
+    letter-spacing: .42em;
+    padding-left: .42em; /* balance trailing tracking */
+    color: var(--mist-text);
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 1.2s ease, transform 1.4s cubic-bezier(.65, 0, .2, 1);
+  }
+  .tagline.shown { opacity: 1; }
+
+  .hint {
+    position: fixed; left: 0; right: 0;
+    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    text-align: center;
+    font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--mist-text);
+    opacity: 0; transition: opacity 1.2s ease;
+    pointer-events: none;
+  }
+  .hint.shown { opacity: 1; }
+
+  /* ---------- The site behind the arch ----------
+     Layout: full-bleed film hero, then paper and moss bands on a 1180px column.
+     Serif display for statements, Daikon for labels and reading text. */
+  .inside {
+    position: fixed; inset: 0;
+    overflow-y: auto; overflow-x: hidden;
+    background: var(--paper2); color: var(--ink);
+    opacity: 0; transition: opacity .9s ease;
+    user-select: text; touch-action: auto;
+    scroll-behavior: smooth;
+    font-family: var(--font-brand);
+  }
+  .inside.shown { opacity: 1; }
+  .inside, .inside *, .inside *::before, .inside *::after { box-sizing: border-box; }
+  .inside img, .inside video { display: block; max-width: 100%; }
+  .wrap {
+    max-width: 1180px; margin-inline: auto; width: 100%;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+  .inside section { scroll-margin-top: 0; }
+  /* Every band is opaque, so the footer waiting underneath only shows when it is uncovered. */
+  :where(.inside > section) { background-color: var(--paper2); }
+  .inside :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+  /* Auto-hide header: see-through over the film, then a quiet bar that slides away while
+     scrolling down and returns on the way up. It holds the logo and the numbered menu. */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+    padding-top: env(safe-area-inset-top, 0px); color: #fff;
+    transition: transform .5s cubic-bezier(.2, .8, .2, 1), background-color .4s ease, color .4s ease, box-shadow .4s ease;
+  }
+  .topbar-in {
+    max-width: 1180px; margin-inline: auto; height: 68px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+  .topbar.tucked { transform: translateY(-100%); }
+  .topbar.on-light { color: var(--moss); }
+  .topbar.filled { background-color: rgba(246, 244, 239, .92); color: var(--moss); box-shadow: 0 1px 0 var(--line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .topbar.filled.on-dark { background-color: rgba(20, 33, 28, .9); color: #eef0ea; box-shadow: 0 1px 0 rgba(255, 255, 255, .08); }
+  .logo-btn {
+    appearance: none; border: 0; background: none; color: inherit; font: inherit;
+    display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 4px; border-radius: 8px;
+  }
+  .logo-btn svg { width: 32px; height: auto; }
+  .logo-btn span { font-size: 24px; line-height: 1; }
+
+  /* Numbered menu in the header. Below 1100px it folds into an Index button. */
+  .index { position: relative; }
+  .index ol { list-style: none; margin: 0; padding: 0; display: flex; gap: clamp(16px, 2vw, 30px); }
+  .index a {
+    color: inherit; text-decoration: none; white-space: nowrap;
+    display: grid; grid-template-columns: auto auto; gap: 6px 8px; align-items: center;
+    font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase; opacity: .72; transition: opacity .3s;
+  }
+  .index a:hover, .index a:focus-visible, .index a.on { opacity: 1; }
+  .index .n { font-variant-numeric: tabular-nums; letter-spacing: .1em; opacity: .85; }
+  .index .bar { grid-column: 1 / -1; height: 1px; position: relative; overflow: hidden; }
+  .index .bar i { position: absolute; inset: 0; background: currentColor; transform-origin: left; transform: scaleX(0); transition: transform .5s cubic-bezier(.2, .8, .2, 1); }
+  .index a:hover .bar i, .index a:focus-visible .bar i, .index a.on .bar i { transform: scaleX(1); }
+  /* Three-line menu button; the lines fold into an X while the menu is open. */
+  .index-toggle {
+    display: none; appearance: none; border: 0; background: none; color: inherit; cursor: pointer;
+    width: 44px; height: 44px; padding: 0; margin-right: -10px; position: relative; border-radius: 6px;
+  }
+  .index-toggle span {
+    position: absolute; left: 11px; right: 11px; height: 1.5px; background: currentColor; border-radius: 1px;
+    transition: transform .35s cubic-bezier(.2, .8, .2, 1), opacity .25s ease;
+  }
+  .index-toggle span:nth-child(1) { top: 15px; }
+  .index-toggle span:nth-child(2) { top: 21.25px; }
+  .index-toggle span:nth-child(3) { top: 27.5px; }
+  .index.open .index-toggle span:nth-child(1) { transform: translateY(6.25px) rotate(45deg); }
+  .index.open .index-toggle span:nth-child(2) { opacity: 0; }
+  .index.open .index-toggle span:nth-child(3) { transform: translateY(-6.25px) rotate(-45deg); }
+  @media (max-width: 1100px) {
+    .index-toggle { display: block; }
+    .index ol {
+      display: none; position: absolute; right: 0; top: calc(100% + 12px); flex-direction: column;
+      width: min(300px, calc(100vw - 32px)); background: var(--forest); color: #eef0ea;
+      padding: 20px 22px; border-radius: 4px; gap: 14px; box-shadow: 0 18px 40px rgba(0, 0, 0, .25);
+    }
+    .index.open ol { display: flex; }
+    .index a { font-size: 11.5px; grid-template-columns: 28px 1fr; }
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--font-brand); font-size: 11.5px; line-height: 1; letter-spacing: .24em; text-transform: uppercase;
+    padding: 17px 22px 17px 24px; border-radius: 999px; text-decoration: none; cursor: pointer;
+    border: 1px solid transparent; transition: background .25s, color .25s, border-color .25s, transform .25s;
+  }
+  .btn svg { width: 14px; height: 14px; transition: transform .25s; }
+  .btn:hover svg { transform: translateX(3px); }
+  .btn-light { background: #fff; color: var(--ink); }
+  .btn-light:hover { background: var(--paper3); }
+  .btn-ghost { border-color: rgba(255, 255, 255, .55); color: #fff; background: rgba(255, 255, 255, .04); }
+  .btn-ghost:hover { border-color: #fff; background: rgba(255, 255, 255, .12); }
+  .btn-moss { background: var(--moss); color: #fff; border: 0; }
+  .btn-moss:hover { background: var(--moss2); }
+
+  /* Hero film */
+  .hero {
+    position: relative; min-height: max(640px, 100svh);
+    display: flex; align-items: flex-end; overflow: hidden;
+    color: #fff; background: #17211d;
+  }
+  .film { position: absolute; inset: 0; margin: 0; }
+  .film figure { position: absolute; inset: 0; margin: 0; opacity: 0; transition: opacity 1.8s ease; }
+  .film figure.on { opacity: 1; }
+  .film img, .film video {
+    width: 100%; height: 100%; object-fit: cover; max-width: none;
+    transform-origin: var(--o, 50% 50%);
+    transform: scale(1.14);
+    transition: transform 0s linear 1.8s;
+  }
+  .film figure.on img, .film figure.on video { transform: scale(1.0); transition: transform 9s cubic-bezier(.25, .1, .25, 1); }
+  .hero::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(12, 18, 16, .5) 0%, rgba(12, 18, 16, 0) 26%, rgba(12, 18, 16, .1) 52%, rgba(12, 18, 16, .82) 100%),
+      linear-gradient(90deg, rgba(12, 18, 16, .5) 0%, rgba(12, 18, 16, 0) 66%);
+  }
+  .hero-in {
+    position: relative; z-index: 2;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 48px; align-items: end;
+    padding-block: 140px clamp(48px, 9vh, 92px);
+  }
+  .hero-copy { display: grid; gap: 26px; min-width: 0; }
+  .kicker { font-size: 11px; letter-spacing: .4em; text-transform: uppercase; margin: 0; }
+  .hero .kicker { opacity: .85; }
+  .hero h1 {
+    margin: 0; font-family: var(--serif); font-weight: 400;
+    font-size: clamp(44px, 6.6vw, 96px); line-height: .98; letter-spacing: -.012em;
+    max-width: 12.5ch; text-wrap: balance;
+  }
+  .hero p.lead { margin: 0; max-width: 56ch; font-size: clamp(15.5px, 1.25vw, 17.5px); line-height: 1.7; opacity: .92; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+  /* Hero index: numbered entries that navigate; hovering one previews its picture in the film. */
+  .chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; width: 220px; }
+  .chapters a {
+    color: #fff; text-decoration: none;
+    display: grid; grid-template-columns: 30px 1fr; gap: 8px 10px; align-items: center;
+    font-size: 10.5px; letter-spacing: .26em; text-transform: uppercase; opacity: .62; transition: opacity .4s;
+  }
+  .chapters a:hover, .chapters a:focus-visible { opacity: 1; }
+  .chapters .n { font-variant-numeric: tabular-nums; letter-spacing: .1em; }
+  .chapters .bar { grid-column: 1 / -1; height: 1px; background: rgba(255, 255, 255, .25); position: relative; overflow: hidden; }
+  .chapters .bar i { position: absolute; inset: 0; background: #fff; transform-origin: left; transform: scaleX(0); transition: transform .5s cubic-bezier(.2, .8, .2, 1); }
+  .chapters a:hover .bar i, .chapters a:focus-visible .bar i { transform: scaleX(1); }
+  .hero .in { opacity: 0; transform: translateY(20px); transition: opacity 1.1s ease, transform 1.2s cubic-bezier(.2, .8, .2, 1); transition-delay: var(--d, 0s); }
+  .entered .hero .in { opacity: 1; transform: none; }
+  @media (max-width: 760px) {
+    .hero-in { grid-template-columns: 1fr; }
+  }
+
+  /* Sections */
+  .sec { padding-block: clamp(84px, 11vw, 150px); }
+  .eyebrow2 { margin: 0 0 22px; font-size: 11px; letter-spacing: .4em; text-transform: uppercase; color: var(--moss2); }
+  .inside h2 {
+    margin: 0; font-family: var(--serif); font-weight: 400;
+    font-size: clamp(34px, 4.1vw, 58px); line-height: 1.06; letter-spacing: -.008em; text-wrap: balance;
+  }
+  .inside h3 { margin: 0; }
+  .body { margin: 0; font-size: 16.5px; line-height: 1.75; color: var(--text); max-width: 60ch; }
+  .body + .body { margin-top: 18px; }
+  .split { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: clamp(32px, 6vw, 88px); align-items: end; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; align-items: start; } }
+
+  /* Reveal on scroll: only content below the first screen starts hidden */
+  .rv { transition: opacity 1s ease, transform 1.1s cubic-bezier(.2, .8, .2, 1); transition-delay: var(--d, 0s); }
+  .arm .rv:not(.seen) { opacity: 0; transform: translateY(24px); }
+
+  /* How we work */
+  .steps {
+    list-style: none; margin: clamp(64px, 8vw, 96px) 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 32px; position: relative;
+  }
+  .steps::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 40px; height: 1px; background: var(--line);
+    transform-origin: left; transform: scaleX(0); transition: transform 1.8s cubic-bezier(.65, 0, .25, 1);
+  }
+  .steps.seen::before { transform: scaleX(1); }
+  .steps li { display: grid; gap: 14px; align-content: start; position: relative; min-width: 0; }
+  .steps .num { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--moss2); height: 26px; }
+  .steps .node {
+    width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--moss2); background: var(--paper2);
+    margin-bottom: 14px; transition: background .5s ease, transform .5s ease; transition-delay: calc(var(--i) * .28s + .3s);
+  }
+  .steps.seen .node { background: var(--moss); transform: scale(1.1); }
+  .steps h3 { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; font-weight: 700; color: var(--ink); line-height: 1.5; }
+  .steps p { margin: 0; font-size: 15px; line-height: 1.65; color: var(--text); }
+  @media (max-width: 900px) {
+    .steps { grid-template-columns: 1fr; gap: 34px; padding-left: 34px; }
+    .steps::before { top: 8px; bottom: 8px; left: 5px; right: auto; width: 1px; height: auto; transform-origin: top; transform: scaleY(0); }
+    .steps.seen::before { transform: scaleY(1); }
+    .steps .node { position: absolute; left: -34px; top: 4px; margin: 0; }
+    .steps .num { height: auto; }
+  }
+
+  /* Platform */
+  .platform { background: var(--moss); color: #fff; }
+  .platform .eyebrow2 { color: rgba(255, 255, 255, .6); }
+  .platform .body { color: rgba(255, 255, 255, .78); }
+  .plat-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(32px, 6vw, 80px); align-items: center; }
+  .constellation { position: relative; width: min(100%, 540px); aspect-ratio: 1; margin-inline: auto; max-width: 100%; }
+  .constellation svg.links { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .constellation svg.links line { stroke: rgba(255, 255, 255, .22); stroke-width: 1; vector-effect: non-scaling-stroke; transition: stroke .35s; }
+  .constellation svg.links circle { fill: rgba(255, 255, 255, .55); transition: fill .35s, r .35s; }
+  .constellation .core { position: absolute; left: 50%; top: 50%; width: 22%; transform: translate(-50%, -50%); color: #fff; }
+  .constellation .core svg { width: 100%; height: auto; display: block; }
+  .cap {
+    position: absolute; transform: translate(-50%, -50%);
+    appearance: none; background: none; border: 0; color: #fff; cursor: default;
+    font: inherit; font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; line-height: 1.55;
+    max-width: 124px; text-align: center; padding: 6px; border-radius: 6px;
+    transition: opacity .35s ease;
+  }
+  .constellation.focus .cap { opacity: .25; }
+  .constellation.focus .cap.on { opacity: 1; }
+  .constellation.focus svg.links line { stroke: rgba(255, 255, 255, .06); }
+  .constellation.focus svg.links line.on { stroke: rgba(255, 255, 255, .85); }
+  .constellation.focus svg.links circle { fill: rgba(255, 255, 255, .15); }
+  .constellation.focus svg.links circle.on { fill: #fff; }
+  .result {
+    margin: clamp(64px, 8vw, 100px) 0 0; padding-top: 40px; border-top: 1px solid rgba(255, 255, 255, .18);
+    display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 24px; align-items: baseline;
+  }
+  .result span { font-size: 11px; letter-spacing: .4em; text-transform: uppercase; color: rgba(255, 255, 255, .6); }
+  .result p { margin: 0; font-family: var(--serif); font-size: clamp(26px, 3vw, 40px); line-height: 1.2; text-wrap: balance; }
+  @media (max-width: 860px) {
+    .plat-grid { grid-template-columns: 1fr; }
+    .result { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 620px) {
+    .constellation { aspect-ratio: auto; display: flex; flex-wrap: wrap; gap: 8px; }
+    .constellation svg.links, .constellation .core { display: none; }
+    .cap { position: static; transform: none; max-width: none; border: 1px solid rgba(255, 255, 255, .25); border-radius: 999px; padding: 9px 14px; }
+  }
+
+  /* Beliefs */
+  .bel-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(32px, 7vw, 100px); align-items: center; }
+  .bel-photo { margin: 0; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 2px; max-width: 100%; }
+  .bel-photo img, .bel-photo video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .bel-lead { margin: 0; font-size: 18px; line-height: 1.6; color: var(--text); max-width: 40ch; }
+  .motto {
+    margin: 22px 0 30px; font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: clamp(52px, 7vw, 104px); line-height: .95; color: var(--moss); letter-spacing: -.015em;
+  }
+  .principles {
+    list-style: none; margin: clamp(64px, 8vw, 100px) 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line);
+  }
+  .principles li { padding: 34px 28px 0; border-left: 1px solid var(--line); display: grid; gap: 12px; align-content: start; }
+  .principles li:first-child { border-left: 0; padding-left: 0; }
+  .principles svg { width: 28px; height: 28px; stroke: var(--moss); fill: none; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  .principles h3 { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; font-weight: 700; }
+  .principles p { margin: 0; font-size: 15px; line-height: 1.65; color: var(--text); }
+  @media (max-width: 900px) {
+    .bel-grid { grid-template-columns: 1fr; }
+    .bel-photo { aspect-ratio: 4 / 3; }
+    .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 34px; }
+    .principles li:nth-child(3) { border-left: 0; padding-left: 0; }
+  }
+  @media (max-width: 520px) {
+    .principles { grid-template-columns: 1fr; }
+    .principles li { border-left: 0; padding-left: 0; }
+  }
+
+  /* Wellness: a dark band so it parts clearly from the light sections on either side. */
+  .wellness { background: var(--forest); color: #eef0ea; }
+  .wellness .eyebrow2 { color: rgba(255, 255, 255, .55); }
+  .wellness .body { color: rgba(238, 240, 234, .78); }
+  .well-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: clamp(28px, 5vw, 72px); align-items: center; margin-top: clamp(48px, 6vw, 80px); }
+  .wheel { width: 100%; height: auto; display: block; overflow: visible; }
+  .wheel .seg { fill: rgba(255, 255, 255, .06); stroke: var(--forest); stroke-width: 2; cursor: pointer; transition: fill .45s ease; }
+  .wheel .seg:hover { fill: rgba(255, 255, 255, .14); }
+  .wheel .seg.on { fill: var(--sage); }
+  /* No browser box on click or tap; keyboard users get a ring that follows the segment's shape. */
+  .wheel .seg:focus { outline: none; }
+  .wheel .seg:focus-visible { outline: none; stroke: #fff; stroke-width: 3; }
+  .wheel .segn { font-family: var(--serif); font-style: italic; font-size: 17px; fill: rgba(255, 255, 255, .55); pointer-events: none; transition: fill .45s; }
+  .wheel .segn.on { fill: var(--forest); }
+  .wheel .lbl { font-family: var(--font-brand); font-size: 13px; letter-spacing: 2.6px; fill: rgba(255, 255, 255, .5); text-transform: uppercase; cursor: pointer; transition: fill .45s; }
+  .wheel .lbl.on { fill: var(--sage); font-weight: 700; }
+  .wheel .hub { fill: #1b2b25; stroke: rgba(255, 255, 255, .12); }
+  .wheel .sunlines { stroke: var(--sage); stroke-width: 34; stroke-linecap: round; fill: none; }
+  .wheel .hubtxt { font-size: 11px; letter-spacing: 3px; fill: var(--sage); font-family: var(--font-brand); }
+  .dim-n { margin: 0 0 10px; font-size: 11px; letter-spacing: .3em; color: rgba(255, 255, 255, .5); font-variant-numeric: tabular-nums; }
+  .dim-panel h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(36px, 4vw, 52px); line-height: 1; color: var(--sage); margin-bottom: 16px; }
+  .dim-panel .body { animation: fadeUp .6s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .well-foot {
+    margin: clamp(56px, 7vw, 90px) 0 0; padding-top: 36px; border-top: 1px solid rgba(255, 255, 255, .15);
+    font-family: var(--serif); font-size: clamp(22px, 2.4vw, 32px); line-height: 1.3; color: #eef0ea; max-width: 46ch; text-wrap: balance;
+  }
+  @media (max-width: 900px) { .well-grid { grid-template-columns: 1fr; } }
+  /* Phones: the labels stay, set larger inside a wider drawing area. */
+  @media (max-width: 640px) { .wheel .lbl { font-size: 22px; letter-spacing: 2px; } }
+
+  /* Partner cards: the photograph fills the whole card; the words sit on a deep fade at its foot. */
+  .card {
+    position: relative; isolation: isolate; min-width: 0; min-height: 560px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    background: #0f1916; color: #fff; border-radius: 3px; overflow: hidden;
+  }
+  .card figure { position: absolute; inset: 0; margin: 0; z-index: -1; }
+  .card figure img, .card figure video { width: 100%; height: 100%; object-fit: cover; object-position: var(--p, 50% 50%); max-width: none; transition: transform 1.4s cubic-bezier(.2, .8, .2, 1); }
+  .card:hover figure img, .card:hover figure video { transform: scale(1.05); }
+  .card figure::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 16, 14, .05) 0%, rgba(10, 16, 14, .25) 30%, rgba(10, 16, 14, .82) 60%, rgba(10, 16, 14, .94) 100%); }
+  .card-body { padding: 30px 30px 32px; display: grid; gap: 12px; }
+  .card-head { display: grid; gap: 8px; margin-bottom: 4px; }
+  .card-head span { font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase; opacity: .8; }
+  .card-head h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 3vw, 40px); line-height: 1.04; }
+  .card-lead { margin: 0; font-family: var(--serif); font-size: 21px; line-height: 1.3; color: #fff; }
+  .card-body .body { font-size: 14.5px; line-height: 1.65; color: rgba(255, 255, 255, .8); }
+  .card-cta {
+    margin-top: 8px; justify-self: start;
+    display: inline-flex; gap: 10px; align-items: center; color: var(--sage); text-decoration: none;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase; border-bottom: 1px solid currentColor; padding-bottom: 6px;
+  }
+  .card-cta svg { width: 13px; height: 13px; transition: transform .25s; }
+  .card-cta:hover svg { transform: translateX(3px); }
+
+  /* Contact */
+  .contact { background: #fff; }
+  .contact-grid { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: clamp(36px, 6vw, 96px); align-items: start; }
+  .mail { margin-top: 34px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+  .mail span { font-family: var(--serif); font-size: 24px; color: var(--moss); user-select: all; word-break: break-all; }
+  .mini-btn {
+    appearance: none; font: inherit; font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
+    border: 1px solid var(--line); background: none; color: var(--ink); padding: 8px 12px; border-radius: 999px; cursor: pointer;
+  }
+  .mini-btn:hover { border-color: var(--ink); }
+  form#inq { display: grid; gap: 18px; min-width: 0; }
+  fieldset.engage { border: 0; margin: 0 0 6px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+  fieldset.engage legend { padding: 0; margin-bottom: 14px; font-size: 11px; letter-spacing: .26em; text-transform: uppercase; color: var(--text); }
+  .chip { position: relative; }
+  .chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip span {
+    display: inline-block; padding: 11px 15px; border-radius: 999px; border: 1px solid var(--line);
+    font-size: 13.5px; color: var(--ink); cursor: pointer; transition: background .25s, color .25s, border-color .25s;
+  }
+  .chip span:hover { border-color: var(--moss2); }
+  .chip input:checked + span { background: var(--moss); border-color: var(--moss); color: #fff; }
+  .chip input:focus-visible + span { outline: 2px solid var(--moss); outline-offset: 2px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+  .fld { display: grid; gap: 8px; min-width: 0; }
+  .fld > span { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--text); }
+  .fld input, .fld textarea {
+    font: inherit; font-size: 16px; color: var(--ink); background: var(--paper2);
+    border: 1px solid var(--line); border-radius: 3px; padding: 14px 15px; width: 100%; min-width: 0;
+    transition: border-color .2s, background .2s;
+  }
+  .fld textarea { resize: vertical; min-height: 130px; line-height: 1.6; }
+  .fld input:focus, .fld textarea:focus { outline: none; border-color: var(--moss); background: #fff; }
+  .fld [aria-invalid="true"] { border-color: #a4452c; }
+  .form-err { margin: 0; color: #a4452c; font-size: 14px; }
+  .form-actions { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-top: 6px; }
+  .form-done { border: 1px solid var(--line); border-left: 3px solid var(--moss); padding: 22px 24px; display: grid; gap: 12px; background: var(--paper2); }
+  .form-done h3 { font-family: var(--serif); font-weight: 400; font-size: 28px; color: var(--moss); }
+  .form-done p { margin: 0; font-size: 15px; line-height: 1.65; color: var(--text); }
+  .form-done .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  @media (max-width: 860px) { .contact-grid { grid-template-columns: 1fr; } }
+
+
+  /* Sideways sections: the section is as tall as its track is wide; the pin sticks
+     to the top while vertical scroll drives the track from right to left. */
+  .hz { position: relative; background: var(--paper2); }
+  /* Partner with us sits on a deeper beige so it parts from Wellness above and Contact below. */
+  #collaborate { background: var(--paper3); }
+  .hz-pin { position: relative; }
+  .hz-track {
+    position: relative; display: flex; align-items: center;
+    --hz-gap: clamp(28px, 4vw, 64px);
+    gap: var(--hz-gap);
+    padding-left: max(20px, calc((100vw - 1180px) / 2 + 20px));
+    padding-right: max(20px, 10vw);
+    padding-top: 40px;
+    will-change: transform;
+  }
+  .hz-panel { flex: none; min-width: 0; }
+  #how .hz-track { --hz-gap: clamp(24px, 2.4vw, 40px); }
+  .hz-intro { width: min(540px, 84vw); display: grid; gap: 24px; }
+  .hz-intro-wide { width: min(1080px, 88vw); grid-template-columns: minmax(0, 1fr) minmax(0, .82fr); gap: clamp(28px, 4vw, 64px); align-items: center; }
+  .hz-intro-copy { display: grid; gap: 24px; min-width: 0; }
+  .hz-lead-img { margin: 0; height: min(68vh, 620px); overflow: hidden; border-radius: 2px; max-width: 100%; }
+  .hz-lead-img img { width: 100%; height: 100%; object-fit: cover; max-width: none; transform-origin: 40% 35%; animation: drift 22s ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: scale(1.04) translate(0, 0); } to { transform: scale(1.14) translate(-1.5%, -1%); } }
+  @media (max-width: 760px) { .hz-intro-wide { grid-template-columns: 1fr; width: 86vw; } .hz-lead-img { height: 30vh; order: -1; } }
+  @media (prefers-reduced-motion: reduce) { .hz-lead-img img { animation: none; } }
+  .hz-cue { margin: 6px 0 0; display: inline-flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--moss); font-weight: 700; animation: cuePulse 2.4s ease-in-out infinite; }
+  @keyframes cuePulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+  .hz-cue svg { width: 14px; height: 14px; animation: nudge 1.8s ease-in-out infinite; }
+  @keyframes nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+
+  .step { width: min(250px, 70vw); display: grid; grid-template-rows: auto 30px auto auto; gap: 14px; position: relative; }
+  .step-n { font-family: var(--serif); font-style: italic; font-size: clamp(84px, 9vw, 132px); line-height: .85; color: var(--moss); opacity: .9; }
+  .step .node {
+    width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--moss2); background: var(--paper2);
+    align-self: center; position: relative; z-index: 1; transition: background .6s ease, transform .6s ease;
+  }
+  .step::before { content: ""; position: absolute; left: 0; right: calc(-1 * var(--hz-gap)); height: 1px; background: var(--line); top: var(--line-y, 0); }
+  .step:last-of-type::before { right: 0; }
+  .step.seen .node { background: var(--moss); transform: scale(1.15); }
+  .step h3 { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; font-weight: 700; color: var(--ink); line-height: 1.5; min-height: 3em; }
+  .step p { margin: 0; font-size: 16px; line-height: 1.65; color: var(--text); max-width: 30ch; }
+
+  .hz-img { margin: 0; width: min(380px, 68vw); height: min(56vh, 520px); overflow: hidden; border-radius: 2px; }
+  .hz-img.tall { width: min(440px, 72vw); height: min(68vh, 640px); }
+  .hz-img img { width: 100%; height: 100%; object-fit: cover; max-width: none; transform: scale(1.18); will-change: transform; }
+
+  .hz .card { width: min(480px, 86vw); }
+  .hz-end { width: min(420px, 80vw); display: grid; gap: 28px; justify-items: start; }
+
+  .hz-hud { display: none; }
+
+  /* Pinned mode */
+  .hz.hz-on .hz-pin { position: sticky; top: 0; height: 100svh; overflow: hidden; display: flex; align-items: center; }
+  .hz.hz-on .hz-track { width: max-content; }
+  .hz.hz-on .card { height: min(calc(100svh - 170px), 720px); min-height: 0; }
+  .hz.hz-on .hz-hud {
+    display: flex; align-items: center; gap: 16px;
+    position: absolute; left: max(20px, calc((100vw - 1180px) / 2 + 20px)); bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+    font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--mist-text);
+  }
+  .hz-bar { width: 160px; height: 1px; background: var(--line); position: relative; overflow: hidden; }
+  .hz-bar i { position: absolute; inset: 0; background: var(--moss); transform-origin: left; transform: scaleX(0); }
+  .hz-count { font-variant-numeric: tabular-nums; color: var(--ink); letter-spacing: .14em; }
+
+  /* Stacked fallback: short screens and reduced motion */
+  .hz:not(.hz-on) .hz-pin { padding-block: clamp(84px, 11vw, 150px); }
+  .hz:not(.hz-on) .hz-track {
+    flex-direction: column; align-items: stretch; gap: 40px; transform: none !important;
+    max-width: 1180px; margin-inline: auto; padding: 0 max(20px, env(safe-area-inset-right, 0px)) 0 max(20px, env(safe-area-inset-left, 0px));
+  }
+  .hz:not(.hz-on) .hz-panel { width: 100%; }
+  .hz:not(.hz-on) .step::before { display: none; }
+  .hz:not(.hz-on) .hz-img, .hz:not(.hz-on) .hz-img.tall { height: auto; aspect-ratio: 16 / 9; }
+  .hz:not(.hz-on) .hz-img img { transform: none !important; }
+  .hz:not(.hz-on) .hz-cue { display: none; }
+  .hz:not(.hz-on) .hz-lead-img { height: auto; aspect-ratio: 4 / 3; }
+  @media (prefers-reduced-motion: reduce) { .hz-cue, .hz-cue svg { animation: none; } }
+
+  /* Partner with us: four full-width picture cards, stacked. Each card pins as its end reaches the
+     bottom of the screen and the next slides over it, like the sections around them. */
+  .collab { padding-bottom: 0; }
+  .collab-head { margin-bottom: clamp(48px, 6vw, 80px); }
+  .partners { display: grid; }
+  .card.partner { width: 100%; min-height: max(560px, 100svh); border-radius: 0; position: sticky; }
+  .card.partner + .card.partner { box-shadow: 0 -28px 60px -24px rgba(8, 14, 12, .45); }
+  .card.partner .card-body { width: 100%; max-width: 1180px; margin-inline: auto; padding-block: 48px clamp(48px, 7vh, 80px); padding-inline: max(20px, env(safe-area-inset-left, 0px)) max(20px, env(safe-area-inset-right, 0px)); }
+  .card.partner .card-copy { display: grid; gap: 12px; max-width: 640px; }
+  .card.partner .card-head h3 { font-size: clamp(34px, 4.2vw, 58px); }
+  .card.partner .card-lead { font-size: clamp(20px, 1.8vw, 24px); }
+  .card.partner .body { font-size: 15.5px; }
+  .card.partner figure::after { background: linear-gradient(180deg, rgba(10, 16, 14, .05) 0%, rgba(10, 16, 14, .15) 35%, rgba(10, 16, 14, .78) 68%, rgba(10, 16, 14, .92) 100%); }
+
+  /* Contact: a dark side for the invitation, a white side for the form. */
+  .contact { background: #fff; }
+  .contact-split { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); min-height: 100svh; }
+  .contact-side {
+    position: relative; overflow: hidden; color: #eef0ea;
+    /* The picnic photograph, held under a deep green so the invitation stays readable. */
+    background: linear-gradient(180deg, rgba(20, 33, 28, .5) 0%, rgba(20, 33, 28, .78) 45%, rgba(20, 33, 28, .94) 100%),
+                url("media/contact-picnic.jpg") center 35% / cover no-repeat, var(--forest);
+    display: flex; align-items: flex-end;
+    padding-block: clamp(96px, 12vw, 160px) clamp(56px, 7vw, 96px);
+    padding-left: max(20px, calc((100vw - 1180px) / 2 + 20px)); padding-right: clamp(24px, 5vw, 72px);
+  }
+  .contact-side .eyebrow2 { color: rgba(255, 255, 255, .55); }
+  .contact-side .body { color: rgba(238, 240, 234, .78); }
+  .contact-side .mail span { color: var(--sage); }
+  .contact-side .mini-btn { color: #eef0ea; border-color: rgba(255, 255, 255, .28); }
+  .contact-side .mini-btn:hover { border-color: #fff; }
+  .contact-side-in { position: relative; z-index: 1; max-width: 520px; }
+  .contact-form-wrap {
+    display: flex; align-items: center;
+    padding-block: clamp(96px, 12vw, 160px) clamp(56px, 7vw, 96px);
+    padding-left: clamp(24px, 5vw, 72px); padding-right: max(20px, calc((100vw - 1180px) / 2 + 20px));
+  }
+  .contact-form-wrap form { width: 100%; max-width: 640px; }
+  @media (max-width: 860px) {
+    .contact-split { grid-template-columns: 1fr; min-height: 0; }
+    .contact-side { padding: 104px max(20px, env(safe-area-inset-right, 0px)) 56px max(20px, env(safe-area-inset-left, 0px)); }
+    .contact-form-wrap { padding: 48px max(20px, env(safe-area-inset-right, 0px)) 72px max(20px, env(safe-area-inset-left, 0px)); }
+  }
+
+  /* ScrollFlow: each band pins when its end reaches the bottom of the screen and the next one
+     slides over it, dimming it as it goes. */
+  .inside > .stack { position: sticky; }
+  .inside > .stack ~ .stack { box-shadow: 0 -28px 60px -24px rgba(8, 14, 12, .35); }
+  .cover { position: absolute; inset: 0; background: #0b1310; opacity: 0; pointer-events: none; z-index: 20; }
+  .finale { position: relative; z-index: 10; }
+  .contact { position: relative; z-index: 1; box-shadow: 0 -28px 60px -24px rgba(8, 14, 12, .35); }
+
+  /* Footer: waits underneath the page (curtain reveal) and inverts from light to dark as it
+     is uncovered. --inv runs 0 to 1. */
+  .foot {
+    position: sticky; bottom: 0; z-index: 0; overflow: hidden;
+    background: color-mix(in srgb, #0f1916 calc(var(--inv, 1) * 100%), var(--paper2));
+    color: color-mix(in srgb, #eef0ea calc(var(--inv, 1) * 100%), var(--moss));
+  }
+  .foot-in { position: relative; z-index: 1; padding-block: clamp(90px, 12vw, 160px) 40px; display: grid; gap: 70px; }
+  .foot-motto { margin: 0; font-family: var(--serif); font-style: italic; font-size: clamp(40px, 5.5vw, 76px); line-height: 1; max-width: 12ch; color: color-mix(in srgb, var(--sage) calc(var(--inv, 1) * 100%), var(--moss)); }
+  .foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px; padding-top: 28px; border-top: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
+  .foot-row nav { display: flex; flex-wrap: wrap; gap: 24px; }
+  .foot-row a { color: inherit; opacity: .8; text-decoration: none; font-size: 13px; }
+  .foot-row a:hover { opacity: 1; }
+  .foot-small { margin: 0; font-size: 12px; opacity: .8; letter-spacing: .06em; }
+  .foot-legal { display: grid; gap: 14px; margin-top: 18px; }
+  .foot-legal p { margin: 0; font-size: 12px; line-height: 1.7; opacity: .8; max-width: 92ch; }
+  .foot-legal nav { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+  .foot-legal a { color: inherit; font-size: 12px; letter-spacing: .06em; text-underline-offset: 3px; }
+
+  /* Accessibility helpers */
+  .sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .skip {
+    position: fixed; top: 10px; left: 10px; z-index: 100; padding: 12px 18px; border-radius: 999px;
+    background: var(--moss); color: #fff; font-size: 13px; letter-spacing: .08em; text-decoration: none;
+    transform: translateY(-160%); transition: transform .2s ease;
+  }
+  .skip:focus { transform: none; outline: 2px solid #fff; outline-offset: 2px; }
+  .hero:focus { outline: none; }
+  .topbar-tools { display: flex; align-items: center; gap: clamp(12px, 2vw, 26px); }
+  .motion-btn {
+    appearance: none; border: 0; background: none; color: inherit; cursor: pointer;
+    width: 44px; height: 44px; padding: 0; border-radius: 50%; display: grid; place-items: center; opacity: .85;
+  }
+  .motion-btn:hover { opacity: 1; }
+  .motion-btn svg { width: 16px; height: 16px; }
+  .motion-btn .ic-play { display: none; }
+  .motion-btn[aria-pressed="true"] .ic-play { display: block; }
+  .motion-btn[aria-pressed="true"] .ic-pause { display: none; }
+  .inside.still .film img, .inside.still .film video { transform: none !important; transition: none !important; }
+  .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  .form-note { margin: 0; font-size: 13px; line-height: 1.6; color: var(--text); }
+  .form-note a { color: var(--moss); text-underline-offset: 3px; }
+  .btn[aria-busy="true"] { opacity: .7; cursor: progress; }
+
+
+  @media (prefers-reduced-motion: reduce) {
+    .inside { scroll-behavior: auto; }
+    .film img, .film video, .film figure.on img, .film figure.on video { transform: none !important; transition: none !important; }
+    .hero .in, .rv, .steps::before, .steps .node { transition: none !important; }
+    .arm .rv:not(.seen) { opacity: 1; transform: none; }
+    .chapters li.on .bar i { transition: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand, .tagline, .hint, .inside, .scene.zooming { transition: none !important; }
+    .brand.shown, .brand.refocus .mark, .brand.refocus .wordmark, .brand.shown.fuzzing .mark, .brand.shown.fuzzing .wordmark { animation: none !important; }
+    .scene.zooming { filter: none !important; }
+    .brand.flare .sun { animation: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="field" aria-hidden="true"></canvas>
+
+<main class="stage" id="stage">
+  <h1 class="sr-only">Regenera, regenerative destinations</h1>
+  <div class="scene" id="scene">
+    <button class="brand" id="brand" type="button" aria-label="Enter Regenera">
+      <svg class="mark" id="mark" viewBox="700 505 532 530" aria-hidden="true">
+        <path d="M737 999 V770 A229 229 0 0 1 1195 770 V999 Z"
+              fill="none" stroke="currentColor" stroke-width="28" stroke-linejoin="round"/>
+        <g class="sun" stroke="currentColor" stroke-width="28" stroke-linecap="round" fill="none">
+          <line x1="966" y1="790" x2="966" y2="632"/>
+          <line x1="808" y1="790" x2="1124" y2="790"/>
+          <polyline points="858,673 966,790 1074,673" stroke-linejoin="round"/>
+          <polyline points="858,908 966,790 1074,908" stroke-linejoin="round"/>
+          <circle cx="966" cy="790" r="22" fill="currentColor" stroke="none"/>
+        </g>
+      </svg>
+      <span class="wordmark">regenera</span>
+    </button>
+    <div class="tagline" id="tagline">Regenerative Destinations</div>
+  </div>
+</main>
+
+<div class="hint" id="hint" aria-hidden="true">Move · Press and release · Drag to ripple · Tap the arch to enter</div>
+
+<div class="inside" id="inside" hidden>
+  <a class="skip" href="#top">Skip to main content</a>
+  <header class="topbar" id="nav">
+    <div class="topbar-in">
+      <button class="logo-btn" id="back" type="button" aria-label="Regenera home">
+          <svg viewBox="700 505 532 530" aria-hidden="true">
+            <path d="M737 999 V770 A229 229 0 0 1 1195 770 V999 Z" fill="none" stroke="currentColor" stroke-width="34" stroke-linejoin="round"/>
+            <g stroke="currentColor" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <line x1="966" y1="790" x2="966" y2="632"/>
+              <line x1="808" y1="790" x2="1124" y2="790"/>
+              <polyline points="858,673 966,790 1074,673"/>
+              <polyline points="858,908 966,790 1074,908"/>
+            </g>
+          </svg>
+        <span>regenera</span>
+      </button>
+      <div class="topbar-tools">
+      <button class="motion-btn" id="motionBtn" type="button" aria-pressed="false" aria-label="Pause background video and motion">
+        <svg class="ic-pause" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx=".6"/><rect x="9.5" y="2.5" width="3" height="11" rx=".6"/></svg>
+        <svg class="ic-play" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.6v10.8a.6.6 0 0 0 .9.5l8.6-5.4a.6.6 0 0 0 0-1L4.9 2.1a.6.6 0 0 0-.9.5z"/></svg>
+      </button>
+      <nav class="index" id="rail" aria-label="Sections">
+        <button class="index-toggle" id="indexToggle" type="button" aria-expanded="false" aria-controls="indexList" aria-label="Open menu"><span></span><span></span><span></span></button>
+        <ol id="indexList">
+          <li><a href="#how" data-jump data-sec="how"><span class="n">01</span><span>How we work</span><span class="bar"><i></i></span></a></li>
+          <li><a href="#platform" data-jump data-sec="platform"><span class="n">02</span><span>Platform</span><span class="bar"><i></i></span></a></li>
+          <li><a href="#beliefs" data-jump data-sec="beliefs"><span class="n">03</span><span>Beliefs</span><span class="bar"><i></i></span></a></li>
+          <li><a href="#wellness" data-jump data-sec="wellness"><span class="n">04</span><span>Wellness</span><span class="bar"><i></i></span></a></li>
+          <li><a href="#collaborate" data-jump data-sec="collaborate"><span class="n">05</span><span>Partner with us</span><span class="bar"><i></i></span></a></li>
+          <li><a href="#contact" data-jump data-sec="contact"><span class="n">06</span><span>Contact</span><span class="bar"><i></i></span></a></li>
+        </ol>
+      </nav>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero stack" id="top" aria-label="Introduction" data-tone="dark" tabindex="-1">
+    <div class="film" aria-hidden="true">
+      <figure class="on" style="--o: 30% 40%"><img src="img/coast.jpg" alt=""></figure>
+      <figure style="--o: 50% 60%"><video src="media/hero-waves.mp4" poster="media/hero-waves.jpg" muted loop playsinline preload="metadata"></video></figure>
+      <figure style="--o: 50% 55%"><video src="media/hero-lake.mp4" poster="media/hero-lake.jpg" muted loop playsinline preload="metadata"></video></figure>
+      <figure style="--o: 50% 50%"><video src="media/hero-islands.mp4" poster="media/hero-islands.jpg" muted loop playsinline preload="metadata"></video></figure>
+      <figure style="--o: 50% 70%"><video src="media/hero-beach.mp4" poster="media/hero-beach.jpg" muted loop playsinline preload="metadata"></video></figure>
+      <figure style="--o: 55% 45%"><video src="media/hero-pottery.mp4" poster="media/hero-pottery.jpg" muted loop playsinline preload="metadata"></video></figure>
+    </div>
+    <div class="wrap hero-in">
+      <div class="hero-copy">
+        <p class="kicker in" style="--d:.1s">Regenerative destinations</p>
+        <h1 class="in" style="--d:.25s">Ready to be part of something extraordinary?</h1>
+        <p class="lead in" style="--d:.45s">Regenera brings together distinctive places, aligned capital, operating expertise, and multidisciplinary capabilities to create regenerative wellness destinations where nature, hospitality, culture, community, and well-being come together as a living ecosystem.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="hz stack" id="how" aria-label="How we work" data-tone="light">
+    <div class="hz-pin">
+      <div class="hz-track">
+        <div class="hz-panel hz-intro hz-intro-wide">
+          <div class="hz-intro-copy">
+            <p class="eyebrow2">How we work</p>
+            <h2>We partner with land and property owners to transform distinctive places into regenerative wellness destinations.</h2>
+            <p class="body">Regenera brings together the strategy, design, capital, operators, and partnerships needed to move from vision to execution. Each project is independently structured while benefiting from the capabilities, relationships, and knowledge of the broader Regenera platform.</p>
+            <p class="hz-cue">Keep scrolling <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></p>
+          </div>
+          <figure class="hz-lead-img"><img src="img/ridge.jpg" alt="A hiker on a mountain ridge at sunrise, looking out over the valley"></figure>
+        </div>
+        <article class="hz-panel step rv" data-step><span class="step-n">01</span><span class="node"></span><h3>Start with place</h3><p>Understand the land, ecology, culture, community, and potential.</p></article>
+        <article class="hz-panel step rv" data-step><span class="step-n">02</span><span class="node"></span><h3>Define the vision</h3><p>Create a destination where nature, wellness, hospitality, culture, and economics work together.</p></article>
+        <article class="hz-panel step rv" data-step><span class="step-n">03</span><span class="node"></span><h3>Assemble the ecosystem</h3><p>Bring together the capital, design, development, operators, and partners needed to execute.</p></article>
+        <article class="hz-panel step rv" data-step><span class="step-n">04</span><span class="node"></span><h3>Develop and build</h3><p>Guide the project from feasibility and design through financing, development, and opening.</p></article>
+        <article class="hz-panel step rv" data-step><span class="step-n">05</span><span class="node"></span><h3>Activate and evolve</h3><p>Bring the destination to life and carry what we learn into future projects.</p></article>
+      </div>
+      <div class="hz-hud" aria-hidden="true">
+        <span class="hz-label">How we work</span>
+        <span class="hz-bar"><i></i></span>
+        <span class="hz-count">01 / 05</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec platform stack" id="platform" data-tone="dark">
+    <div class="wrap plat-grid">
+      <div class="rv">
+        <p class="eyebrow2">The platform</p>
+        <h2>One platform. Multidisciplinary capabilities.</h2>
+        <p class="body" style="margin-top:28px">Regenera integrates expertise across regenerative design, real estate development, capital and investment, hospitality, wellness and longevity, technology, operations, brand, culture, and community.</p>
+        <p class="body">Each destination draws on what it needs while strengthening the platform for what comes next.</p>
+      </div>
+      <div class="constellation rv" id="constellation" style="--d:.15s" aria-label="Regenera capabilities">
+        <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="core" aria-hidden="true">
+          <svg viewBox="790 615 352 310">
+            <g stroke="currentColor" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <line x1="966" y1="790" x2="966" y2="632"/>
+              <line x1="808" y1="790" x2="1124" y2="790"/>
+              <polyline points="858,673 966,790 1074,673"/>
+              <polyline points="858,908 966,790 1074,908"/>
+            </g>
+          </svg>
+        </div>
+        <button class="cap" type="button">Regenerative design</button>
+        <button class="cap" type="button">Real estate development</button>
+        <button class="cap" type="button">Capital &amp; investment</button>
+        <button class="cap" type="button">Hospitality</button>
+        <button class="cap" type="button">Wellness &amp; longevity</button>
+        <button class="cap" type="button">Technology</button>
+        <button class="cap" type="button">Operations</button>
+        <button class="cap" type="button">Brand</button>
+        <button class="cap" type="button">Culture</button>
+        <button class="cap" type="button">Community</button>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="result rv">
+        <span>The result</span>
+        <p>Wellness destinations designed to create lasting value for people, nature, communities, and investors.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec beliefs stack" id="beliefs" data-tone="light">
+    <div class="wrap bel-grid">
+      <figure class="bel-photo rv"><video id="beliefsFilm" src="media/beliefs-ridge.mp4" poster="media/beliefs-ridge.jpg" muted loop playsinline preload="metadata" aria-label="Aerial view along a mountain ridge above a fjord at sunrise"></video></figure>
+      <div class="rv" style="--d:.15s">
+        <p class="eyebrow2">What we believe</p>
+        <p class="bel-lead">We create places where people and nature thrive together, guided by a simple principle:</p>
+        <p class="motto">Give more than we take.</p>
+        <p class="body">Inspired by the Mother Tree, Regenera is designed as a living ecosystem where each destination strengthens the next through shared knowledge, relationships, and experience.</p>
+      </div>
+    </div>
+    <div class="wrap">
+      <ul class="principles">
+        <li class="rv" style="--d:0s">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14z"/><path d="M5 19l8-8"/></svg>
+          <h3>Stewardship</h3><p>Restore and protect the natural systems that sustain each place.</p>
+        </li>
+        <li class="rv" style="--d:.1s">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.6"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+          <h3>Well-being</h3><p>Create environments that support vitality, connection, and meaningful experience.</p>
+        </li>
+        <li class="rv" style="--d:.2s">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8.5" r="3"/><circle cx="16" cy="8.5" r="3"/><path d="M2.5 19.5c0-3.2 2.5-5.5 5.5-5.5s5.5 2.3 5.5 5.5M10.5 19.5c0-3.2 2.5-5.5 5.5-5.5s5.5 2.3 5.5 5.5"/></svg>
+          <h3>Culture</h3><p>Honor local identity, traditions, and community.</p>
+        </li>
+        <li class="rv" style="--d:.3s">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 21V11a7.5 7.5 0 0 1 15 0v10"/><path d="M9 21v-5a3 3 0 0 1 6 0v5"/></svg>
+          <h3>Adaptive design</h3><p>Create places that evolve with people, nature, and changing needs.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec wellness stack" id="wellness" data-tone="dark">
+    <div class="wrap">
+      <div class="split">
+        <div class="rv">
+          <p class="eyebrow2">Wellness</p>
+          <h2>Wellness in the fullest sense</h2>
+        </div>
+        <div class="rv" style="--d:.15s">
+          <p class="body">Wellness is not simply an amenity within a Regenera destination. It is embedded in how the entire place is conceived, designed, experienced, and sustained.</p>
+          <p class="body">We see well-being as a relationship between people, place, purpose, and community. Our destinations support six interconnected dimensions:</p>
+        </div>
+      </div>
+      <div class="well-grid">
+        <div class="rv"><svg class="wheel" id="wheel" viewBox="0 0 640 520" role="group" aria-label="Six dimensions of well-being"></svg></div>
+        <div class="dim-panel rv" style="--d:.15s">
+          <p class="dim-n" id="dimN">01 / 06</p>
+          <h3 id="dimName">Physical</h3>
+          <p class="body" id="dimText" aria-live="off">Movement, nutrition, restorative sleep, preventive health, longevity, and connection with nature.</p>
+        </div>
+      </div>
+      <p class="well-foot rv">Nature, architecture, food, movement, learning, culture, community, creativity, restoration, and purpose reinforce one another as part of the wellness experience.</p>
+    </div>
+  </section>
+
+  <section class="sec collab stack" id="collaborate" aria-label="Partner with us" data-tone="light">
+    <div class="wrap split collab-head">
+      <div class="rv">
+        <p class="eyebrow2">Partner with us</p>
+        <h2>Regenera is built through collaboration.</h2>
+      </div>
+      <p class="body rv" style="--d:.15s">We work with landowners, capital partners, operators, institutions, and specialists who can help bring distinctive destinations into existence.</p>
+    </div>
+    <div class="partners">
+      <article class="card partner">
+            <figure style="--p: 25% 50%"><img src="img/coast.jpg" alt="Aerial view of a rocky green headland meeting deep teal water, with a group of kayaks offshore" loading="lazy"></figure>
+            <div class="card-body">
+              <div class="card-copy">
+              <div class="card-head"><span>Landowners</span><h3>Bring your property</h3></div>
+              <p class="card-lead">You have a remarkable place. We help determine what it could become and how to move it forward.</p>
+              <p class="body">For owners of land, estates, hotels, resorts, retreat properties, farms, and other properties suited for repositioning, Regenera can assess the opportunity, define the destination strategy, test feasibility, assemble the ecosystem, structure capital, and guide execution.</p>
+              <a class="card-cta" href="#contact" data-engage="property">Explore your property with Regenera <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+              </div>
+            </div>
+      </article>
+      <article class="card partner">
+            <figure style="--p: 50% 50%"><img src="media/capital-islands.jpg" alt="Aerial view of green islets in dark water" loading="lazy"></figure>
+            <div class="card-body">
+              <div class="card-copy">
+              <div class="card-head"><span>Investors</span><h3>Capital partners</h3></div>
+              <p class="card-lead">Invest in distinctive real assets where regenerative design, hospitality, wellness, and long-term value creation come together.</p>
+              <p class="body">We work with family offices, private investors, real estate groups, and impact-aligned capital partners to structure project-specific opportunities with defined governance, operating strategy, and economic and regenerative objectives.</p>
+              <a class="card-cta" href="#contact" data-engage="invest">Explore investment partnerships <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+              </div>
+            </div>
+      </article>
+      <article class="card partner">
+            <figure style="--p: 50% 55%"><img src="media/card-dinner.jpg" alt="A long communal dinner outdoors under string lights" loading="lazy"></figure>
+            <div class="card-body">
+              <div class="card-copy">
+              <div class="card-head"><span>Operators</span><h3>Operating partners</h3></div>
+              <p class="card-lead">Bring an exceptional hospitality, wellness, longevity, food, education, agriculture, cultural, or experiential concept into a larger destination ecosystem.</p>
+              <p class="body">Regenera provides the surrounding development platform, destination strategy, physical environment, complementary partners, brand ecosystem, and infrastructure that can help strong operating concepts thrive.</p>
+              <a class="card-cta" href="#contact" data-engage="operator">Become an operating partner <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+              </div>
+            </div>
+      </article>
+      <article class="card partner">
+            <figure style="--p: 50% 50%"><video src="media/card-macaques.mp4" poster="media/card-macaques.jpg" muted loop playsinline preload="metadata" aria-label="Two macaques sitting together on a stone wall in the forest"></video></figure>
+            <div class="card-body">
+              <div class="card-copy">
+              <div class="card-head"><span>Institutions &amp; specialists</span><h3>Institutional &amp; specialist partners</h3></div>
+              <p class="body">We collaborate with foundations, universities, conservation organizations, public-sector partners, architects, designers, ecological and agricultural experts, technology providers, researchers, cultural producers, and other specialists on restoration, research, community outcomes, innovation, and destination-specific needs.</p>
+              <a class="card-cta" href="#contact" data-engage="institution">Explore other partnerships <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></a>
+              </div>
+            </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Contact and footer share a layer above the pinned bands, so the footer can only be
+       uncovered once Contact lifts away. -->
+  <div class="finale">
+    <section class="contact" id="contact" data-tone="dark" data-tone-right="light">
+      <div class="contact-split">
+        <div class="contact-side">
+          <div class="contact-side-in rv">
+          <p class="eyebrow2">Start a conversation</p>
+          <h2>Tell us how you would like to engage.</h2>
+          <p class="body" style="margin-top:26px">We review each inquiry for fit with the Regenera platform and active destinations. If there is alignment, a member of our team will reach out to schedule an introductory conversation.</p>
+          <div class="mail">
+            <span id="mailAddr">hello@weareregenera.com</span>
+            <button class="mini-btn" type="button" id="copyMail">Copy email</button>
+          </div>
+          </div>
+        </div>
+        <div class="contact-form-wrap">
+        <form id="inq" class="rv" style="--d:.15s" novalidate>
+          <p class="sr-only">Fields marked with an asterisk are required.</p>
+          <fieldset class="engage" id="engageSet">
+            <legend>How would you like to engage? *</legend>
+            <label class="chip"><input type="radio" name="engage" id="e-property" value="I have a property"><span>I have a property</span></label>
+            <label class="chip"><input type="radio" name="engage" id="e-invest" value="I am interested in investing"><span>I am interested in investing</span></label>
+            <label class="chip"><input type="radio" name="engage" id="e-operator" value="I am an operator"><span>I am an operator</span></label>
+            <label class="chip"><input type="radio" name="engage" id="e-institution" value="I represent an institution"><span>I represent an institution</span></label>
+            <label class="chip"><input type="radio" name="engage" id="e-specialist" value="I am a specialist or collaborator"><span>I am a specialist or collaborator</span></label>
+            <label class="chip"><input type="radio" name="engage" id="e-other" value="Other"><span>Other</span></label>
+          </fieldset>
+          <div class="row2">
+            <label class="fld"><span>Name *</span><input id="f-name" name="name" autocomplete="name" maxlength="120" required aria-required="true"></label>
+            <label class="fld"><span>Organization</span><input id="f-org" name="org" autocomplete="organization" maxlength="160"></label>
+          </div>
+          <div class="row2">
+            <label class="fld"><span>Email *</span><input id="f-email" name="email" type="email" autocomplete="email" maxlength="254" required aria-required="true"></label>
+            <label class="fld"><span>Location</span><input id="f-loc" name="location" maxlength="160" placeholder="City, country, or property location"></label>
+          </div>
+          <label class="fld"><span>Brief description</span><textarea id="f-desc" name="description" rows="5" maxlength="4000" placeholder="Tell us about the place, the opportunity, or what you bring."></textarea></label>
+          <label class="fld"><span>Website or supporting link (optional)</span><input id="f-link" name="link" type="url" inputmode="url" maxlength="500" placeholder="https://"></label>
+          <div class="hp" aria-hidden="true"><label>Leave this field empty <input name="website_hp" id="f-hp" tabindex="-1" autocomplete="off"></label></div>
+          <div id="turnstile"></div>
+          <p class="form-err" id="formErr" role="alert" hidden></p>
+          <p class="form-note">We use the details you share only to reply to your inquiry. See our <a href="legal.html#privacy">privacy notice</a>.</p>
+          <div class="form-actions">
+            <button class="btn btn-moss" type="submit" id="sendBtn">Send inquiry
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></button>
+          </div>
+          <div class="form-done" id="formSent" role="status" hidden>
+            <h3 tabindex="-1">Thank you. Your inquiry has been sent.</h3>
+            <p>A copy of what you shared has reached our team. If there is alignment, we will be in touch at the email address you provided.</p>
+          </div>
+          <div class="form-done" id="formDone" hidden>
+            <h3 tabindex="-1">Your inquiry was not sent</h3>
+            <p>We could not reach our inbox just now, so nothing has been sent. Copy your inquiry and email it to hello@weareregenera.com.</p>
+            <div class="row">
+              <button class="mini-btn" type="button" id="copyInq">Copy inquiry</button>
+              <button class="mini-btn" type="button" id="editInq">Edit</button>
+            </div>
+          </div>
+        </form>
+        </div>
+      </div>
+    </section>
+
+    <footer class="foot" data-tone="dark" role="contentinfo">
+      <div class="wrap foot-in">
+        <p class="foot-motto">Give more than we take.</p>
+        <div>
+          <div class="foot-row">
+            <span style="font-size:24px">regenera</span>
+            <nav aria-label="Footer">
+              <a href="#how" data-jump>How we work</a>
+              <a href="#platform" data-jump>Platform</a>
+              <a href="#beliefs" data-jump>Beliefs</a>
+              <a href="#wellness" data-jump>Wellness</a>
+              <a href="#collaborate" data-jump>Partner with us</a>
+              <a href="#contact" data-jump>Contact</a>
+            </nav>
+          </div>
+          <div class="foot-legal">
+            <p class="foot-small">© 2026 Regenera. All rights reserved. · hello@weareregenera.com</p>
+            <p>All content on this website, including text, photographs, video, graphics, logos, and design, is the property of Regenera or its licensors and is protected by copyright, trademark, and other intellectual property laws. Any unauthorized reproduction, distribution, modification, display, or use of this content without prior written permission is prohibited and may violate applicable laws.</p>
+            <nav aria-label="Legal">
+              <a href="legal.html#privacy">Privacy notice</a>
+              <a href="legal.html#terms">Terms of use</a>
+              <a href="legal.html#accessibility">Accessibility</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script src="app.js" defer></script>
+
+</body>
+</html>
