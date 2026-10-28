@@ -1,0 +1,14 @@
+// Cloudflare Workers config: serves public/ as static assets and runs worker.js for /api/*.
+{
+  "name": "regenera",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  // Keep variables set in the dashboard (MAIL_FROM, MAIL_TO) on each deploy.
+  "keep_vars": true,
+  "observability": { "enabled": true }
+}
