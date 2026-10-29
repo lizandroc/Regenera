@@ -7,8 +7,11 @@
   "assets": {
     "directory": "./cloudflare/public",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*", "/admin", "/admin/*"]
   },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "regenera-inquiries", "database_id": "08cb4e1a-cbbe-4075-86a1-9362924867a6" }
+  ],
   "keep_vars": true,
   "observability": { "enabled": true }
 }

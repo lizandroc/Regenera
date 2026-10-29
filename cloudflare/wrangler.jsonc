@@ -6,9 +6,12 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*", "/admin", "/admin/*"]
   },
   // Keep variables set in the dashboard (MAIL_FROM, MAIL_TO) on each deploy.
+  "d1_databases": [
+    { "binding": "DB", "database_name": "regenera-inquiries", "database_id": "08cb4e1a-cbbe-4075-86a1-9362924867a6" }
+  ],
   "keep_vars": true,
   "observability": { "enabled": true }
 }

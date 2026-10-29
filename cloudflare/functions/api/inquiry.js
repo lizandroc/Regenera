@@ -7,6 +7,7 @@
 //   TURNSTILE_SECRET  secret   optional; when set, every request must pass Cloudflare Turnstile
 //   ALLOWED_ORIGINS   text     optional; extra origins allowed to post, comma separated
 //   RATE_LIMITER      binding  optional; Workers rate limiting binding (keyed by visitor IP)
+//   DB                binding  D1 database "regenera-inquiries"; every inquiry is saved for /admin
 
 const ENGAGE = new Set([
   'I have a property',
@@ -86,11 +87,34 @@ export async function onRequestPost({ request, env }) {
     if (!tv.success) return json(400, { ok: false, error: 'Please complete the security check and try again.' });
   }
 
-  if (!env.RESEND_API_KEY || !env.MAIL_FROM || !env.MAIL_TO) {
-    console.error('inquiry: missing RESEND_API_KEY, MAIL_FROM or MAIL_TO');
-    return json(503, { ok: false, error: 'The inbox is not available right now.' });
+  // Save first, so an inquiry is kept even when email delivery fails.
+  let rowId = null;
+  if (env.DB) {
+    try {
+      const saved = await env.DB.prepare(
+        'INSERT INTO inquiries (engage, name, org, email, location, description, link, country) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
+      ).bind(f.engage, f.name, f.org, f.email, f.location, f.description, f.link, String(request.cf?.country || '')).first();
+      rowId = saved ? saved.id : null;
+    } catch (e) {
+      console.error('inquiry: could not save to D1', e && e.message);
+    }
   }
 
+  const emailed = await sendEmail(env, url, f);
+  if (emailed && rowId !== null) {
+    await env.DB.prepare('UPDATE inquiries SET email_sent = 1 WHERE id = ?').bind(rowId).run().catch(() => {});
+  }
+  if (!emailed && rowId === null) {
+    return json(502, { ok: false, error: 'We could not send your inquiry just now.' });
+  }
+  return json(200, { ok: true });
+}
+
+async function sendEmail(env, url, f) {
+  if (!env.RESEND_API_KEY || !env.MAIL_FROM || !env.MAIL_TO) {
+    console.error('inquiry: missing RESEND_API_KEY, MAIL_FROM or MAIL_TO');
+    return false;
+  }
   const rows = [
     ['Engagement', f.engage], ['Name', f.name], ['Organization', f.org || '-'], ['Email', f.email],
     ['Location', f.location || '-'], ['Link', f.link || '-'],
@@ -102,7 +126,8 @@ export async function onRequestPost({ request, env }) {
 <table cellpadding="6" style="border-collapse:collapse">${rows.map(([k, v]) =>
     `<tr><th align="left" style="color:#5f6b70;font-weight:600;padding-right:16px">${escapeHtml(k)}</th><td>${escapeHtml(v)}</td></tr>`).join('')}</table>
 <p style="white-space:pre-wrap;margin-top:16px">${escapeHtml(f.description || '(no description)')}</p>
-<p style="color:#5f6b70;font-size:12px">Sent from ${escapeHtml(url.host)}. Reply to this email to answer ${escapeHtml(f.name)} directly.</p></div>`;
+<p style="color:#5f6b70;font-size:12px">Sent from ${escapeHtml(url.host)}. Reply to this email to answer ${escapeHtml(f.name)} directly.
+All inquiries: https://${escapeHtml(url.host)}/admin</p></div>`;
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -123,9 +148,9 @@ export async function onRequestPost({ request, env }) {
 
   if (!res || !res.ok) {
     console.error('inquiry: Resend rejected the message', res ? res.status : 'network error');
-    return json(502, { ok: false, error: 'We could not send your inquiry just now.' });
+    return false;
   }
-  return json(200, { ok: true });
+  return true;
 }
 
 export function onRequest() {

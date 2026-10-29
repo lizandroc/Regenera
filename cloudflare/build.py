@@ -10,9 +10,17 @@ import re, shutil, sys, pathlib
 src, legal, media_dir, img_dir, fonts_dir = sys.argv[1:6]
 here = pathlib.Path(__file__).parent
 out = here / 'public'
-if out.exists():
-    shutil.rmtree(out)
-out.mkdir()
+# Clear the previous build but keep the hand-written dashboard (public/admin) and font notes.
+out.mkdir(exist_ok=True)
+for item in out.iterdir():
+    if item.name == 'admin':
+        continue
+    if item.name == 'fonts':
+        for f in item.iterdir():
+            if f.name != 'README.md':
+                f.unlink()
+        continue
+    shutil.rmtree(item) if item.is_dir() else item.unlink()
 
 page = open(src, encoding='utf-8').read()
 scripts = re.findall(r'<script>\n?(.*?)</script>', page, flags=re.S)
@@ -49,7 +57,7 @@ for r in sorted(refs):
     (out / r).parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(f, out / r)
 if fonts_dir != '-':
-    (out / 'fonts').mkdir()
+    (out / 'fonts').mkdir(exist_ok=True)
     for f in pathlib.Path(fonts_dir).glob('*.ttf'):
         shutil.copy(f, out / 'fonts' / f.name)
 

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Inquiries · Regenera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Quicksand:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --paper: #fff; --paper2: #f6f4ef; --paper3: #ebe7dd; --ink: #26292b; --text: #424a4c; --muted: #5f676a;
+    --moss: #1f3a2f; --moss2: #2e4d40; --forest: #14211c; --sage: #b8ccb0; --line: #dcd8cd; --danger: #9b3b24;
+    --serif: "Cormorant Garamond", Georgia, serif; --sans: "Daikon", "Quicksand", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--paper2); color: var(--ink); font-family: var(--sans); font-size: 14.5px; line-height: 1.5; }
+  :focus-visible { outline: 2px solid var(--moss); outline-offset: 2px; }
+  button, select, input, textarea { font: inherit; color: inherit; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .bar { background: var(--forest); color: #eef0ea; }
+  .bar-in { max-width: 1320px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 21px; color: inherit; text-decoration: none; }
+  .brand svg { width: 26px; height: auto; }
+  .brand small { font-size: 11px; letter-spacing: .26em; text-transform: uppercase; color: var(--sage); margin-left: 6px; }
+  .bar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 13px; flex-wrap: wrap; }
+  .bar-right .who { opacity: .8; }
+  .bar a, .bar button.ghost { color: #eef0ea; }
+
+  main { max-width: 1320px; margin: 0 auto; padding: 28px 24px 80px; }
+  h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(34px, 4vw, 46px); line-height: 1.05; color: var(--moss); margin: 0; }
+  .sub { color: var(--muted); margin: 6px 0 0; font-size: 13px; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 26px 0; }
+  .stat { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .stat b { display: block; font-family: var(--serif); font-weight: 500; font-size: 36px; line-height: 1; color: var(--moss); }
+  .stat span { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  @media (max-width: 760px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  .tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+  .search { flex: 1 1 260px; position: relative; }
+  .search input { width: 100%; padding: 10px 14px 10px 36px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); }
+  .search svg { position: absolute; left: 13px; top: 50%; width: 15px; height: 15px; transform: translateY(-50%); color: var(--muted); }
+  select { padding: 9px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); }
+  .btn { appearance: none; border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 9px 16px; cursor: pointer; font-weight: 600; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; color: var(--ink); }
+  .btn:hover { border-color: var(--moss2); }
+  .btn.primary { background: var(--moss); border-color: var(--moss); color: #fff; }
+  .btn.danger { color: var(--danger); }
+  .btn.danger:hover { border-color: var(--danger); }
+  .btn.ghost { background: none; border-color: rgba(255,255,255,.25); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .chip { appearance: none; border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 7px 13px; cursor: pointer; font-size: 13px; }
+  .chip[aria-pressed="true"] { background: var(--moss); border-color: var(--moss); color: #fff; }
+  .chip em { font-style: normal; opacity: .65; margin-left: 4px; }
+
+  .bulk { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--paper3); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; }
+
+  .tablewrap { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 12px 14px; background: var(--paper2); border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #fbfaf7; }
+  tr.is-new td:first-child { box-shadow: inset 3px 0 0 var(--moss); }
+  .who-cell button { appearance: none; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; font-weight: 700; color: var(--moss); }
+  .who-cell button:hover { text-decoration: underline; }
+  .who-cell small, .muted { color: var(--muted); font-size: 12.5px; display: block; }
+  .msg { color: var(--text); max-width: 42ch; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--paper3); font-size: 12px; white-space: nowrap; }
+  .st { padding: 5px 26px 5px 10px; font-size: 12.5px; font-weight: 600; border-radius: 999px; }
+  .st[data-v="new"] { background: #e6efe2; border-color: #c8dcbf; color: var(--moss); }
+  .st[data-v="contacted"] { background: #eef1f6; border-color: #d3dbe8; color: #2f4466; }
+  .st[data-v="conversation"] { background: #fbf1df; border-color: #ecd6ae; color: #7a5410; }
+  .st[data-v="qualified"] { background: var(--moss); border-color: var(--moss); color: #fff; }
+  .st[data-v="archived"] { background: var(--paper2); color: var(--muted); }
+  .warn { color: var(--danger); font-size: 12px; }
+  .empty { padding: 60px 20px; text-align: center; color: var(--muted); }
+  .empty b { display: block; font-family: var(--serif); font-weight: 400; font-size: 28px; color: var(--moss); margin-bottom: 6px; }
+
+  @media (max-width: 860px) {
+    thead { display: none; }
+    table, tbody, tr, td { display: block; }
+    tr { border-bottom: 1px solid var(--line); padding: 12px 6px; position: relative; }
+    td { border: 0; padding: 4px 10px; }
+    td.c-check { position: absolute; right: 8px; top: 12px; }
+    td.c-msg .msg { max-width: none; }
+  }
+
+  dialog { border: 0; padding: 0; margin: 0 0 0 auto; height: 100%; max-height: 100%; width: min(560px, 100%); background: var(--paper); color: var(--ink); box-shadow: -20px 0 60px rgba(8,14,12,.25); }
+  dialog::backdrop { background: rgba(20, 33, 28, .45); }
+  .d-in { display: grid; gap: 20px; padding: 26px 28px 40px; }
+  .d-head { display: flex; align-items: start; gap: 12px; }
+  .d-head h2 { font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.05; color: var(--moss); margin: 0; }
+  .d-head .x { margin-left: auto; }
+  dl { display: grid; grid-template-columns: 120px 1fr; gap: 8px 14px; margin: 0; }
+  dt { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); padding-top: 2px; }
+  dd { margin: 0; word-break: break-word; }
+  dd a { color: var(--moss); }
+  .quote { background: var(--paper2); border-left: 3px solid var(--moss); padding: 14px 16px; white-space: pre-wrap; border-radius: 0 8px 8px 0; color: var(--text); }
+  textarea { width: 100%; min-height: 110px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper2); resize: vertical; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .label { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--forest); color: #eef0ea; padding: 10px 18px; border-radius: 999px; font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,.2); }
+  .loading { padding: 40px; text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="/" aria-label="Regenera website">
+      <svg viewBox="700 505 532 530" aria-hidden="true"><path d="M737 999 V770 A229 229 0 0 1 1195 770 V999 Z" fill="none" stroke="currentColor" stroke-width="34" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" fill="none"><line x1="966" y1="790" x2="966" y2="632"/><line x1="808" y1="790" x2="1124" y2="790"/><polyline points="858,673 966,790 1074,673"/><polyline points="858,908 966,790 1074,908"/></g></svg>
+      regenera <small>Inquiries</small>
+    </a>
+    <div class="bar-right">
+      <span class="who" id="who"></span>
+      <a href="/cdn-cgi/access/logout">Sign out</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <h1>Inquiries</h1>
+  <p class="sub" id="sub">Loading…</p>
+
+  <section class="stats" aria-label="Summary">
+    <div class="stat"><b id="sTotal">–</b><span>Total</span></div>
+    <div class="stat"><b id="sNew">–</b><span>New, unreviewed</span></div>
+    <div class="stat"><b id="sWeek">–</b><span>Last 7 days</span></div>
+    <div class="stat"><b id="sQual">–</b><span>Qualified</span></div>
+  </section>
+
+  <div class="tools">
+    <label class="search"><span class="sr-only">Search inquiries</span>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg>
+      <input id="q" type="search" placeholder="Search name, organization, email, location, message">
+    </label>
+    <label><span class="sr-only">Status</span>
+      <select id="fStatus">
+        <option value="open">Open (not archived)</option>
+        <option value="all">All statuses</option>
+        <option value="new">New</option>
+        <option value="contacted">Contacted</option>
+        <option value="conversation">In conversation</option>
+        <option value="qualified">Qualified</option>
+        <option value="archived">Archived</option>
+      </select>
+    </label>
+    <button class="btn" type="button" id="refresh">Refresh</button>
+    <a class="btn" id="csv" href="/api/admin/inquiries.csv">Export CSV</a>
+  </div>
+
+  <div class="chips" id="chips" role="group" aria-label="Filter by engagement"></div>
+
+  <div class="bulk" id="bulk" hidden>
+    <strong id="bulkN"></strong>
+    <label><span class="sr-only">New status for selected</span>
+      <select id="bulkStatus">
+        <option value="contacted">Mark contacted</option>
+        <option value="conversation">Mark in conversation</option>
+        <option value="qualified">Mark qualified</option>
+        <option value="archived">Archive</option>
+        <option value="new">Mark new</option>
+      </select>
+    </label>
+    <button class="btn" type="button" id="bulkApply">Apply</button>
+    <button class="btn danger" type="button" id="bulkDelete">Delete</button>
+    <button class="btn" type="button" id="bulkClear">Clear selection</button>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <caption class="sr-only">Inquiries from the website form</caption>
+      <thead><tr>
+        <th scope="col" class="c-check"><input type="checkbox" id="all" aria-label="Select all shown"></th>
+        <th scope="col">Received</th>
+        <th scope="col">From</th>
+        <th scope="col">Engagement</th>
+        <th scope="col">Message</th>
+        <th scope="col">Status</th>
+      </tr></thead>
+      <tbody id="rows"><tr><td colspan="6" class="loading">Loading inquiries…</td></tr></tbody>
+    </table>
+  </div>
+</main>
+
+<dialog id="detail" aria-labelledby="dName">
+  <div class="d-in">
+    <div class="d-head">
+      <div>
+        <p class="label" id="dWhen"></p>
+        <h2 id="dName"></h2>
+        <p class="muted" id="dOrg"></p>
+      </div>
+      <button class="btn x" type="button" id="dClose" aria-label="Close">✕</button>
+    </div>
+    <div class="row">
+      <a class="btn primary" id="dReply" href="#">Reply by email</a>
+      <button class="btn" type="button" id="dCopy">Copy email</button>
+      <label><span class="sr-only">Status</span><select class="st" id="dStatus"></select></label>
+    </div>
+    <dl>
+      <dt>Engagement</dt><dd id="dEngage"></dd>
+      <dt>Email</dt><dd><a id="dEmail" href="#"></a></dd>
+      <dt>Location</dt><dd id="dLoc"></dd>
+      <dt>Link</dt><dd id="dLink"></dd>
+      <dt>Country</dt><dd id="dCountry"></dd>
+      <dt>Email alert</dt><dd id="dSent"></dd>
+    </dl>
+    <div><p class="label">Message</p><div class="quote" id="dMsg"></div></div>
+    <div>
+      <label class="label" for="dNotes">Private notes</label>
+      <textarea id="dNotes" maxlength="5000" placeholder="Call notes, next steps, who owns this…"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" type="button" id="dSave">Save notes</button>
+        <button class="btn danger" type="button" id="dDelete" style="margin-left:auto">Delete inquiry</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="/admin/admin.js" defer></script>
+</body>
+</html>

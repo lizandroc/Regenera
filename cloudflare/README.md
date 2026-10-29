@@ -39,3 +39,21 @@ Then, in the Worker:
 
 ## Fonts
 Daikon is a licensed font. Keep the `.ttf` files out of a public repository; upload them with a direct deploy, or the site falls back to Quicksand.
+
+## 4. Inquiry dashboard (/admin)
+Every form submission is saved in the D1 database `regenera-inquiries` (bound as `DB`), even when
+the email alert fails. The dashboard at `/admin` lists, filters, annotates and exports them.
+
+It stays closed until Cloudflare Access is set up:
+1. Zero Trust → Access → Applications → **Add an application → Self-hosted**.
+   - Name: `Regenera admin`. Session duration: 24 hours.
+   - Public hostname: `weareregenera.com`, path `admin`. Add a second hostname row: `weareregenera.com`, path `api/admin`.
+2. Policy: **Allow**, Include → Emails → the people who may sign in. Login method: One-time PIN.
+3. Save, then copy the application's **Application Audience (AUD) Tag** (Basic information).
+4. Worker → Settings → Variables and Secrets:
+   - `ACCESS_TEAM_DOMAIN` = `https://<your-team>.cloudflareaccess.com` (Zero Trust → Settings → Team domain)
+   - `ACCESS_AUD` = the AUD tag
+5. Open https://weareregenera.com/admin and sign in with the emailed code.
+
+The Worker verifies the Access token on every request, so `/admin` is closed on the workers.dev
+address too. Schema: `schema.sql`.
