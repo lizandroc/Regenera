@@ -38,7 +38,7 @@ const teamUrl = v => {
 export async function accessUser(request, env) {
   const team = teamUrl(env.ACCESS_TEAM_DOMAIN);
   const aud = String(env.ACCESS_AUD || '').trim();
-  if (!team || !aud) return { why: 'config' };
+  if (!team) return { why: 'config' };
   const token = request.headers.get('Cf-Access-Jwt-Assertion');
   if (!token) return { why: 'no-login' };
   const parts = token.split('.');
@@ -55,7 +55,8 @@ export async function accessUser(request, env) {
     const auds = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
     if (!ok || !(payload.exp > now)) return { why: 'bad-token' };
     if (payload.iss !== team) return { why: 'team' };
-    if (!auds.includes(aud)) return { why: 'aud' };
+    // The visitor has passed Access, so it is safe to show them the AUD tag to copy.
+    if (!auds.includes(aud)) return { why: aud ? 'aud' : 'aud-missing', hint: auds[0] };
     return { user: payload.email || 'signed-in user' };
   } catch {
     return { why: 'team' };
@@ -66,14 +67,15 @@ export async function accessUser(request, env) {
 
 export async function handleAdmin(request, env) {
   const url = new URL(request.url);
-  const { user, why } = await accessUser(request, env);
+  const { user, why, hint } = await accessUser(request, env);
   if (!user) {
     // Say which setup step is missing; none of these reveal data or secrets.
     const reasons = {
-      'config': 'Sign-in is not set up yet: add ACCESS_TEAM_DOMAIN and ACCESS_AUD to the Worker.',
+      'config': 'Sign-in is not set up yet: add ACCESS_TEAM_DOMAIN to the Worker (Zero Trust → Overview → Team domain).',
+      'aud-missing': `Signed in. Last step: add ACCESS_AUD to the Worker with this value:\n\n${hint}`,
       'no-login': 'Cloudflare Access did not ask you to sign in. Open this page at https://weareregenera.com/admin and check the Access application covers the paths "admin" and "api/admin".',
       'team': 'Signed in, but ACCESS_TEAM_DOMAIN does not match your Zero Trust team domain.',
-      'aud': 'Signed in, but ACCESS_AUD does not match this Access application\'s AUD tag.',
+      'aud': `Signed in, but ACCESS_AUD does not match this Access application. Set ACCESS_AUD to:\n\n${hint}`,
       'bad-token': 'Your sign-in has expired or is invalid. Sign in again.',
     };
     return new Response('This page is private.\n\n' + (reasons[why] || ''), { status: 403, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...NO_STORE } });
