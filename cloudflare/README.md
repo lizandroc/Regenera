@@ -44,16 +44,13 @@ Daikon is a licensed font. Keep the `.ttf` files out of a public repository; upl
 Every form submission is saved in the D1 database `regenera-inquiries` (bound as `DB`), even when
 the email alert fails. The dashboard at `/admin` lists, filters, annotates and exports them.
 
-It stays closed until Cloudflare Access is set up:
-1. Zero Trust → Access → Applications → **Add an application → Self-hosted**.
-   - Name: `Regenera admin`. Session duration: 24 hours.
-   - Public hostname: `weareregenera.com`, path `admin`. Add a second hostname row: `weareregenera.com`, path `api/admin`.
-2. Policy: **Allow**, Include → Emails → the people who may sign in. Login method: One-time PIN.
-3. Save, then copy the application's **Application Audience (AUD) Tag** (Basic information).
-4. Worker → Settings → Variables and Secrets:
-   - `ACCESS_TEAM_DOMAIN` = `https://<your-team>.cloudflareaccess.com` (Zero Trust → Settings → Team domain)
-   - `ACCESS_AUD` = the AUD tag
-5. Open https://weareregenera.com/admin and sign in with the emailed code.
+Access is by link plus a shared dashboard password, separate from any Cloudflare account:
+1. Worker → Settings → Variables and Secrets → add `ADMIN_PASSWORD` as a **Secret**
+   (at least 12 characters). Until it is set, `/admin` stays closed.
+2. Share https://weareregenera.com/admin and the password with the team. Each person enters
+   their name, which the dashboard records as "responded by".
+3. To revoke everyone's access, change `ADMIN_PASSWORD`; all sessions end at once.
 
-The Worker verifies the Access token on every request, so `/admin` is closed on the workers.dev
-address too. Schema: `schema.sql`.
+Protection: 5 wrong passwords from one connection lock it out for 15 minutes (table
+`login_attempts`), each wrong try is slowed down, sessions last 12 hours, and every change
+must come from the dashboard page itself. Schema: `schema.sql`.

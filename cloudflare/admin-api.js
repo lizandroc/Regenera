@@ -1,86 +1,139 @@
-// Private inquiry dashboard: /admin (page) and /api/admin/* (data).
+// Inquiry dashboard: /admin (page) and /api/admin/* (data).
 //
-// Every request must carry a valid Cloudflare Access login. The Worker checks the signed
-// token itself, so the dashboard stays closed on any hostname Access does not cover
-// (for example the workers.dev address). Until Access is configured, everything here is closed.
+// Anyone with the link sees a password screen. The dashboard password is its own secret,
+// separate from any Cloudflare account. Visitors also give their name, which is recorded
+// as "responded by". Guessing is limited: 5 wrong passwords from one connection lock it
+// out for 15 minutes, and each wrong try is slowed down.
 //
 // Settings (Worker → Settings → Variables and Secrets):
-//   ACCESS_TEAM_DOMAIN  text  e.g. https://regenera.cloudflareaccess.com
-//   ACCESS_AUD          text  the Access application's "Application Audience (AUD) Tag"
-//   DB                  binding  D1 database "regenera-inquiries"
+//   ADMIN_PASSWORD  secret   at least 12 characters; changing it signs everyone out
+//   DB              binding  D1 database "regenera-inquiries"
 
 const STATUSES = ['new', 'contacted', 'conversation', 'qualified', 'archived'];
 const VIAS = ['', 'email', 'call', 'meeting', 'other'];
 const NOW = "strftime('%Y-%m-%dT%H:%M:%fZ','now')";
 const NO_STORE = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' };
+const MIN_PASSWORD = 12, MAX_TRIES = 5, LOCK_MINUTES = 15;
 
 const json = (status, data) => new Response(JSON.stringify(data), {
   status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...NO_STORE },
 });
 
-/* ---------- Cloudflare Access token check ---------- */
+/* ---------- Dashboard password ---------- */
 
-let certCache = { at: 0, keys: [] };
-const b64url = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
+const COOKIE = 'rg_admin';
+const SESSION_HOURS = 12;
+const enc = new TextEncoder();
+const b64e = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const b64d = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)));
 
-async function accessKeys(team) {
-  if (Date.now() - certCache.at < 10 * 60 * 1000 && certCache.keys.length) return certCache.keys;
-  const res = await fetch(`${team}/cdn-cgi/access/certs`);
-  if (!res.ok) throw new Error('certs ' + res.status);
-  certCache = { at: Date.now(), keys: (await res.json()).keys || [] };
-  return certCache.keys;
+// The signing key comes from the password itself, so changing ADMIN_PASSWORD ends every session.
+async function hmac(env, text) {
+  const key = await crypto.subtle.importKey('raw', enc.encode('regenera-admin|' + env.ADMIN_PASSWORD),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  return b64e(await crypto.subtle.sign('HMAC', key, enc.encode(text)));
+}
+const same = (a, b) => { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; };
+
+// Returns the name stored in a valid session cookie, or null.
+async function sessionName(request, env) {
+  const raw = (request.headers.get('Cookie') || '').split(/;\s*/).find(c => c.startsWith(COOKIE + '='));
+  if (!raw) return null;
+  const [body, sig] = raw.slice(COOKIE.length + 1).split('.');
+  if (!body || !sig || !same(sig, await hmac(env, body))) return null;
+  try {
+    const [name, exp] = b64d(body).split('|');
+    return name && Number(exp) > Date.now() ? name : null;
+  } catch { return null; }
 }
 
-const teamUrl = v => {
-  const host = String(v || '').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-  return host ? 'https://' + host : '';
-};
+async function sessionCookie(env, name) {
+  const body = b64e(enc.encode(`${name}|${Date.now() + SESSION_HOURS * 3600 * 1000}`));
+  return `${COOKIE}=${body}.${await hmac(env, body)}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSION_HOURS * 3600}`;
+}
 
-// Returns { user } when signed in, or { why } naming the reason it is not.
-export async function accessUser(request, env) {
-  const team = teamUrl(env.ACCESS_TEAM_DOMAIN);
-  const aud = String(env.ACCESS_AUD || '').trim();
-  if (!team) return { why: 'config' };
-  const token = request.headers.get('Cf-Access-Jwt-Assertion');
-  if (!token) return { why: 'no-login' };
-  const parts = token.split('.');
-  if (parts.length !== 3) return { why: 'bad-token' };
-  try {
-    const header = JSON.parse(new TextDecoder().decode(b64url(parts[0])));
-    const payload = JSON.parse(new TextDecoder().decode(b64url(parts[1])));
-    if (header.alg !== 'RS256') return { why: 'bad-token' };
-    const jwk = (await accessKeys(team)).find(k => k.kid === header.kid);
-    if (!jwk) return { why: 'team' };
-    const key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
-    const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, b64url(parts[2]), new TextEncoder().encode(parts[0] + '.' + parts[1]));
-    const now = Math.floor(Date.now() / 1000);
-    const auds = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
-    if (!ok || !(payload.exp > now)) return { why: 'bad-token' };
-    if (payload.iss !== team) return { why: 'team' };
-    // The visitor has passed Access, so it is safe to show them the AUD tag to copy.
-    if (!auds.includes(aud)) return { why: aud ? 'aud' : 'aud-missing', hint: auds[0] };
-    return { user: payload.email || 'signed-in user' };
-  } catch {
-    return { why: 'team' };
-  }
+function passwordPage(error, status = 200, name = '') {
+  const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const invalid = error ? ' aria-describedby="err" aria-invalid="true"' : '';
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><title>Inquiries · Regenera</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400&family=Quicksand:wght@400;600;700&display=swap">
+<style>
+  *{box-sizing:border-box} body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f6f4ef;color:#26292b;font-family:Quicksand,system-ui,sans-serif;padding:20px}
+  .card{width:min(420px,100%);background:#fff;border:1px solid #dcd8cd;border-radius:14px;padding:34px 30px}
+  h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:400;font-size:38px;line-height:1.05;color:#1f3a2f;margin:0 0 6px}
+  p{margin:0 0 20px;color:#5f676a;font-size:14px} label{display:block;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#5f676a;margin:16px 0 8px}
+  input{width:100%;font:inherit;font-size:16px;padding:13px 14px;border:1px solid #dcd8cd;border-radius:8px;background:#f6f4ef}
+  input:focus{outline:2px solid #1f3a2f;outline-offset:2px;background:#fff}
+  button{margin-top:22px;width:100%;font:inherit;font-weight:700;font-size:14px;padding:13px;border:0;border-radius:999px;background:#1f3a2f;color:#fff;cursor:pointer}
+  .err{color:#9b3b24;font-size:14px;margin:14px 0 0}
+</style></head><body><main class="card">
+<h1>Regenera inquiries</h1><p>Enter your name and the dashboard password.</p>
+<form method="post" action="/admin/login">
+<label for="nm">Your name</label><input id="nm" name="name" autocomplete="name" maxlength="60" required value="${esc(name)}"${name ? '' : ' autofocus'}>
+<label for="pw">Dashboard password</label><input id="pw" name="password" type="password" autocomplete="current-password" required${name ? ' autofocus' : ''}${invalid}>
+${error ? `<p class="err" id="err" role="alert">${esc(error)}</p>` : ''}
+<button type="submit">Open dashboard</button></form>
+</main></body></html>`;
+  return new Response(html, { status, headers: {
+    'Content-Type': 'text/html; charset=utf-8', ...NO_STORE,
+    'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+    'X-Frame-Options': 'DENY', 'Referrer-Policy': 'same-origin', // no-referrer would make the login POST arrive with Origin: null
+  } });
+}
+
+// Failed-login counter per connection, kept in D1 so it holds across Worker instances.
+async function recentFailures(env, ip) {
+  if (!env.DB) return 0;
+  const row = await env.DB.prepare(`SELECT COUNT(*) AS n FROM login_attempts WHERE ip = ? AND at > ?`)
+    .bind(ip, Date.now() - LOCK_MINUTES * 60000).first().catch(() => null);
+  return row ? row.n : 0;
+}
+async function recordFailure(env, ip) {
+  if (!env.DB) return;
+  await env.DB.batch([
+    env.DB.prepare('INSERT INTO login_attempts (ip, at) VALUES (?, ?)').bind(ip, Date.now()),
+    env.DB.prepare('DELETE FROM login_attempts WHERE at < ?').bind(Date.now() - 24 * 3600000),
+  ]).catch(() => {});
 }
 
 /* ---------- Routes ---------- */
 
 export async function handleAdmin(request, env) {
   const url = new URL(request.url);
-  const { user, why, hint } = await accessUser(request, env);
+  const pw = String(env.ADMIN_PASSWORD || '');
+  if (pw.length < MIN_PASSWORD) {
+    return new Response(`This page is private.\n\nSetup: add a Secret named ADMIN_PASSWORD (at least ${MIN_PASSWORD} characters) to the Worker under Settings → Variables and Secrets.`,
+      { status: 403, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...NO_STORE } });
+  }
+
+  if (url.pathname === '/admin/logout') {
+    return new Response(null, { status: 303, headers: { Location: '/admin/', 'Set-Cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`, ...NO_STORE } });
+  }
+
+  if (url.pathname === '/admin/login' && request.method === 'POST') {
+    if (request.headers.get('Origin') !== url.origin) return passwordPage('Please try again.', 403);
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const form = await request.formData().catch(() => null);
+    const name = String((form && form.get('name')) || '').replace(/[\u0000-\u001F\u007F|<>]/g, '').trim().slice(0, 60);
+    const given = String((form && form.get('password')) || '');
+    if (await recentFailures(env, ip) >= MAX_TRIES) {
+      return passwordPage(`Too many attempts. Try again in ${LOCK_MINUTES} minutes.`, 429, name);
+    }
+    if (!name) return passwordPage('Please enter your name.', 400);
+    // Compare signatures rather than the raw strings, so timing reveals nothing about the password.
+    if (given && same(await hmac(env, 'pw|' + given), await hmac(env, 'pw|' + pw))) {
+      return new Response(null, { status: 303, headers: { Location: '/admin/', 'Set-Cookie': await sessionCookie(env, name), ...NO_STORE } });
+    }
+    await recordFailure(env, ip);
+    await new Promise(r => setTimeout(r, 1200)); // slow down guessing
+    console.warn('admin: wrong dashboard password', ip);
+    return passwordPage('That password is not correct.', 401, name);
+  }
+
+  const user = await sessionName(request, env);
   if (!user) {
-    // Say which setup step is missing; none of these reveal data or secrets.
-    const reasons = {
-      'config': 'Sign-in is not set up yet: add ACCESS_TEAM_DOMAIN to the Worker (Zero Trust → Overview → Team domain).',
-      'aud-missing': `Signed in. Last step: add ACCESS_AUD to the Worker with this value:\n\n${hint}`,
-      'no-login': 'Cloudflare Access did not ask you to sign in. Open this page at https://weareregenera.com/admin and check the Access application covers the paths "admin" and "api/admin".',
-      'team': 'Signed in, but ACCESS_TEAM_DOMAIN does not match your Zero Trust team domain.',
-      'aud': `Signed in, but ACCESS_AUD does not match this Access application. Set ACCESS_AUD to:\n\n${hint}`,
-      'bad-token': 'Your sign-in has expired or is invalid. Sign in again.',
-    };
-    return new Response('This page is private.\n\n' + (reasons[why] || ''), { status: 403, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...NO_STORE } });
+    return url.pathname.startsWith('/api/admin/') ? json(401, { ok: false, error: 'Password required.' }) : passwordPage();
   }
 
   if (!url.pathname.startsWith('/api/admin/')) {
@@ -132,7 +185,7 @@ export async function handleAdmin(request, env) {
       if (!VIAS.includes(body.via)) return json(400, { ok: false, error: 'Unknown response method.' });
       sets.push('responded_via = ?'); vals.push(body.via);
     }
-    // Ticking "responded" records who (from the Access login) and when; a new inquiry moves to Contacted.
+    // Ticking "responded" records who (the name given at sign-in) and when; a new inquiry moves to Contacted.
     if (body.responded === true) {
       sets.push(`responded_at = CASE WHEN responded_at = '' THEN ${NOW} ELSE responded_at END`);
       sets.push("responded_by = CASE WHEN responded_by = '' THEN ? ELSE responded_by END"); vals.push(user);

@@ -47,7 +47,7 @@
       ...opts,
       body: opts.body ? JSON.stringify(opts.body) : undefined,
     });
-    if (res.status === 403) { location.reload(); throw new Error('signed out'); }
+    if (res.status === 403 || res.status === 401) { location.reload(); throw new Error('signed out'); }
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) throw new Error(data.error || 'Request failed');
     return data;

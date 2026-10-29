@@ -12,11 +12,6 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "regenera-inquiries", "database_id": "08cb4e1a-cbbe-4075-86a1-9362924867a6" }
   ],
-  // Not secret: the Zero Trust team and the "Regenera admin" Access application that sign /admin logins.
-  "vars": {
-    "ACCESS_TEAM_DOMAIN": "blue-mouse-2582.cloudflareaccess.com",
-    "ACCESS_AUD": "d9ec43c5ef36ec46665c6e829ee7d3a3d2379ad1c4b2816ac69faf4fafeab7c8"
-  },
   "keep_vars": true,
   "observability": { "enabled": true }
 }

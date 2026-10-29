@@ -26,3 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_inquiries_status ON inquiries(status);
 -- ALTER TABLE inquiries ADD COLUMN responded_at TEXT NOT NULL DEFAULT '';
 -- ALTER TABLE inquiries ADD COLUMN responded_by TEXT NOT NULL DEFAULT '';
 -- ALTER TABLE inquiries ADD COLUMN responded_via TEXT NOT NULL DEFAULT '';
+
+-- Dashboard password lockout (failed attempts per connection):
+CREATE TABLE IF NOT EXISTS login_attempts (ip TEXT NOT NULL, at INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_login_attempts ON login_attempts(ip, at);
