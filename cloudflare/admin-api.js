@@ -29,28 +29,36 @@ async function accessKeys(team) {
   return certCache.keys;
 }
 
-// Returns the signed-in person's email, or null.
+const teamUrl = v => {
+  const host = String(v || '').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  return host ? 'https://' + host : '';
+};
+
+// Returns { user } when signed in, or { why } naming the reason it is not.
 export async function accessUser(request, env) {
-  const team = (env.ACCESS_TEAM_DOMAIN || '').replace(/\/+$/, '');
-  if (!team.startsWith('https://') || !env.ACCESS_AUD) return null;
+  const team = teamUrl(env.ACCESS_TEAM_DOMAIN);
+  const aud = String(env.ACCESS_AUD || '').trim();
+  if (!team || !aud) return { why: 'config' };
   const token = request.headers.get('Cf-Access-Jwt-Assertion');
-  if (!token) return null;
+  if (!token) return { why: 'no-login' };
   const parts = token.split('.');
-  if (parts.length !== 3) return null;
+  if (parts.length !== 3) return { why: 'bad-token' };
   try {
     const header = JSON.parse(new TextDecoder().decode(b64url(parts[0])));
     const payload = JSON.parse(new TextDecoder().decode(b64url(parts[1])));
-    if (header.alg !== 'RS256') return null;
+    if (header.alg !== 'RS256') return { why: 'bad-token' };
     const jwk = (await accessKeys(team)).find(k => k.kid === header.kid);
-    if (!jwk) return null;
+    if (!jwk) return { why: 'team' };
     const key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
     const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, b64url(parts[2]), new TextEncoder().encode(parts[0] + '.' + parts[1]));
     const now = Math.floor(Date.now() / 1000);
-    const aud = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
-    if (!ok || payload.iss !== team || !aud.includes(env.ACCESS_AUD) || !(payload.exp > now)) return null;
-    return payload.email || 'signed-in user';
+    const auds = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+    if (!ok || !(payload.exp > now)) return { why: 'bad-token' };
+    if (payload.iss !== team) return { why: 'team' };
+    if (!auds.includes(aud)) return { why: 'aud' };
+    return { user: payload.email || 'signed-in user' };
   } catch {
-    return null;
+    return { why: 'team' };
   }
 }
 
@@ -58,9 +66,17 @@ export async function accessUser(request, env) {
 
 export async function handleAdmin(request, env) {
   const url = new URL(request.url);
-  const user = await accessUser(request, env);
+  const { user, why } = await accessUser(request, env);
   if (!user) {
-    return new Response('This page is private.', { status: 403, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...NO_STORE } });
+    // Say which setup step is missing; none of these reveal data or secrets.
+    const reasons = {
+      'config': 'Sign-in is not set up yet: add ACCESS_TEAM_DOMAIN and ACCESS_AUD to the Worker.',
+      'no-login': 'Cloudflare Access did not ask you to sign in. Open this page at https://weareregenera.com/admin and check the Access application covers the paths "admin" and "api/admin".',
+      'team': 'Signed in, but ACCESS_TEAM_DOMAIN does not match your Zero Trust team domain.',
+      'aud': 'Signed in, but ACCESS_AUD does not match this Access application\'s AUD tag.',
+      'bad-token': 'Your sign-in has expired or is invalid. Sign in again.',
+    };
+    return new Response('This page is private.\n\n' + (reasons[why] || ''), { status: 403, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...NO_STORE } });
   }
 
   if (!url.pathname.startsWith('/api/admin/')) {
