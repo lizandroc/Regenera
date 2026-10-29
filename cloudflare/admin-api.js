@@ -10,6 +10,8 @@
 //   DB                  binding  D1 database "regenera-inquiries"
 
 const STATUSES = ['new', 'contacted', 'conversation', 'qualified', 'archived'];
+const VIAS = ['', 'email', 'call', 'meeting', 'other'];
+const NOW = "strftime('%Y-%m-%dT%H:%M:%fZ','now')";
 const NO_STORE = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' };
 
 const json = (status, data) => new Response(JSON.stringify(data), {
@@ -105,7 +107,7 @@ export async function handleAdmin(request, env) {
 
   if (path === 'inquiries.csv' && request.method === 'GET') {
     const { results } = await env.DB.prepare('SELECT * FROM inquiries ORDER BY created_at DESC').all();
-    const cols = ['id', 'created_at', 'status', 'engage', 'name', 'org', 'email', 'location', 'link', 'country', 'email_sent', 'description', 'notes'];
+    const cols = ['id', 'created_at', 'status', 'engage', 'name', 'org', 'email', 'location', 'link', 'country', 'email_sent', 'responded_at', 'responded_by', 'responded_via', 'description', 'notes'];
     // Quote every cell; a leading = + - @ is neutralised so spreadsheets never run it as a formula.
     const cell = v => { let s = String(v ?? ''); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
     const csv = [cols.join(','), ...results.map(r => cols.map(c => cell(r[c])).join(','))].join('\r\n');
@@ -126,8 +128,20 @@ export async function handleAdmin(request, env) {
       const notes = String(body.notes).slice(0, 5000);
       sets.push('notes = ?'); vals.push(notes);
     }
+    if (body.via !== undefined) {
+      if (!VIAS.includes(body.via)) return json(400, { ok: false, error: 'Unknown response method.' });
+      sets.push('responded_via = ?'); vals.push(body.via);
+    }
+    // Ticking "responded" records who (from the Access login) and when; a new inquiry moves to Contacted.
+    if (body.responded === true) {
+      sets.push(`responded_at = CASE WHEN responded_at = '' THEN ${NOW} ELSE responded_at END`);
+      sets.push("responded_by = CASE WHEN responded_by = '' THEN ? ELSE responded_by END"); vals.push(user);
+      if (body.status === undefined) sets.push("status = CASE WHEN status = 'new' THEN 'contacted' ELSE status END");
+    } else if (body.responded === false) {
+      sets.push("responded_at = ''", "responded_by = ''", "responded_via = ''");
+    }
     if (!sets.length) return json(400, { ok: false, error: 'Nothing to change.' });
-    sets.push("updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')");
+    sets.push(`updated_at = ${NOW}`);
     const row = await env.DB.prepare(`UPDATE inquiries SET ${sets.join(', ')} WHERE id = ? RETURNING *`).bind(...vals, Number(one[1])).first();
     return row ? json(200, { ok: true, item: row }) : json(404, { ok: false, error: 'Not found.' });
   }
@@ -139,6 +153,10 @@ export async function handleAdmin(request, env) {
     const marks = ids.map(() => '?').join(',');
     if (body.action === 'delete') {
       await env.DB.prepare(`DELETE FROM inquiries WHERE id IN (${marks})`).bind(...ids).run();
+    } else if (body.action === 'responded') {
+      await env.DB.prepare(`UPDATE inquiries SET responded_at = CASE WHEN responded_at = '' THEN ${NOW} ELSE responded_at END,
+        responded_by = CASE WHEN responded_by = '' THEN ? ELSE responded_by END,
+        status = CASE WHEN status = 'new' THEN 'contacted' ELSE status END, updated_at = ${NOW} WHERE id IN (${marks})`).bind(user, ...ids).run();
     } else if (body.action === 'status' && STATUSES.includes(body.status)) {
       await env.DB.prepare(`UPDATE inquiries SET status = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id IN (${marks})`).bind(body.status, ...ids).run();
     } else {

@@ -78,6 +78,11 @@
   .st[data-v="qualified"] { background: var(--moss); border-color: var(--moss); color: #fff; }
   .st[data-v="archived"] { background: var(--paper2); color: var(--muted); }
   .warn { color: var(--danger); font-size: 12px; }
+  .resp { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; }
+  .resp input { width: 18px; height: 18px; accent-color: var(--moss); cursor: pointer; }
+  .resp-cell small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .resp-box { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: var(--paper2); border-radius: 10px; padding: 12px 14px; }
+  .group-row td { background: var(--paper2); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 10px 14px; }
   .empty { padding: 60px 20px; text-align: center; color: var(--muted); }
   .empty b { display: block; font-family: var(--serif); font-weight: 400; font-size: 28px; color: var(--moss); margin-bottom: 6px; }
 
@@ -129,7 +134,7 @@
 
   <section class="stats" aria-label="Summary">
     <div class="stat"><b id="sTotal">–</b><span>Total</span></div>
-    <div class="stat"><b id="sNew">–</b><span>New, unreviewed</span></div>
+    <div class="stat"><b id="sWait">–</b><span>Awaiting response</span></div>
     <div class="stat"><b id="sWeek">–</b><span>Last 7 days</span></div>
     <div class="stat"><b id="sQual">–</b><span>Qualified</span></div>
   </section>
@@ -150,6 +155,22 @@
         <option value="archived">Archived</option>
       </select>
     </label>
+    <label><span class="sr-only">Responded</span>
+      <select id="fResp">
+        <option value="all">Responded or not</option>
+        <option value="waiting">Not responded yet</option>
+        <option value="done">Responded</option>
+      </select>
+    </label>
+    <label><span class="sr-only">Sort by</span>
+      <select id="sort">
+        <option value="newest">Sort: newest first</option>
+        <option value="oldest">Sort: oldest first</option>
+        <option value="engage">Sort: by engagement type</option>
+        <option value="waiting">Sort: not responded first</option>
+        <option value="responder">Sort: by who responded</option>
+      </select>
+    </label>
     <button class="btn" type="button" id="refresh">Refresh</button>
     <a class="btn" id="csv" href="/api/admin/inquiries.csv">Export CSV</a>
   </div>
@@ -168,6 +189,7 @@
       </select>
     </label>
     <button class="btn" type="button" id="bulkApply">Apply</button>
+    <button class="btn" type="button" id="bulkResp">Mark responded</button>
     <button class="btn danger" type="button" id="bulkDelete">Delete</button>
     <button class="btn" type="button" id="bulkClear">Clear selection</button>
   </div>
@@ -181,9 +203,10 @@
         <th scope="col">From</th>
         <th scope="col">Engagement</th>
         <th scope="col">Message</th>
+        <th scope="col">Responded</th>
         <th scope="col">Status</th>
       </tr></thead>
-      <tbody id="rows"><tr><td colspan="6" class="loading">Loading inquiries…</td></tr></tbody>
+      <tbody id="rows"><tr><td colspan="7" class="loading">Loading inquiries…</td></tr></tbody>
     </table>
   </div>
 </main>
@@ -202,6 +225,19 @@
       <a class="btn primary" id="dReply" href="#">Reply by email</a>
       <button class="btn" type="button" id="dCopy">Copy email</button>
       <label><span class="sr-only">Status</span><select class="st" id="dStatus"></select></label>
+    </div>
+    <div class="resp-box">
+      <label class="resp"><input type="checkbox" id="dResp"> Responded</label>
+      <label><span class="sr-only">How</span>
+        <select id="dVia">
+          <option value="">How? (optional)</option>
+          <option value="email">By email</option>
+          <option value="call">By phone call</option>
+          <option value="meeting">In a meeting</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+      <span class="muted" id="dRespBy"></span>
     </div>
     <dl>
       <dt>Engagement</dt><dd id="dEngage"></dd>

@@ -14,7 +14,15 @@ CREATE TABLE IF NOT EXISTS inquiries (
   email_sent INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'new',
   notes TEXT NOT NULL DEFAULT '',
+  responded_at TEXT NOT NULL DEFAULT '',
+  responded_by TEXT NOT NULL DEFAULT '',
+  responded_via TEXT NOT NULL DEFAULT '',
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 CREATE INDEX IF NOT EXISTS idx_inquiries_created ON inquiries(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_inquiries_status ON inquiries(status);
+
+-- Added after launch (already applied to the live database):
+-- ALTER TABLE inquiries ADD COLUMN responded_at TEXT NOT NULL DEFAULT '';
+-- ALTER TABLE inquiries ADD COLUMN responded_by TEXT NOT NULL DEFAULT '';
+-- ALTER TABLE inquiries ADD COLUMN responded_via TEXT NOT NULL DEFAULT '';
