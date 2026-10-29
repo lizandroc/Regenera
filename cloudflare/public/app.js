@@ -589,7 +589,9 @@
       if (inside.hidden) return;
       hzs.forEach(h => {
         h.sec.style.height = '';
-        const can = !reduce && inside.clientHeight >= 560;
+        // Sideways travel follows the visitor's own scrolling, so it stays on with reduced motion;
+        // only the easing and the picture drift are dropped for those visitors.
+        const can = inside.clientHeight >= 560;
         h.sec.classList.toggle('hz-on', can);
         h.on = can;
         if (!can) { h.track.style.transform = ''; return; }
@@ -612,7 +614,7 @@
       hzs.forEach(h => {
         if (!h.on) return;
         const target = Math.min(1, Math.max(0, (inside.scrollTop - flowTop(h.sec)) / (h.dist || 1))) * h.dist;
-        h.cur = snap ? target : h.cur + (target - h.cur) * 0.14;
+        h.cur = snap || reduce ? target : h.cur + (target - h.cur) * 0.14;
         if (Math.abs(target - h.cur) > 0.4) moving = true; else h.cur = target;
         h.track.style.transform = `translate3d(${-h.cur}px,0,0)`;
         h.bar.style.transform = `scaleX(${h.dist ? h.cur / h.dist : 0})`;
@@ -621,7 +623,7 @@
         h.steps.forEach((s, k) => { if (s.offsetLeft <= mid) idx = k; });
         h.count.textContent = `${pad2(idx + 1)} / ${pad2(h.steps.length)}`;
         const vw = h.pin.clientWidth;
-        h.imgs.forEach(img => {
+        if (!reduce) h.imgs.forEach(img => {
           const pnl = img.parentElement;
           const off = pnl.offsetLeft + pnl.offsetWidth / 2 - h.cur - vw / 2;
           img.style.transform = `translate3d(${off * -0.09}px,0,0) scale(1.18)`;
