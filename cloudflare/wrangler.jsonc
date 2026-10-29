@@ -12,6 +12,8 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "regenera-inquiries", "database_id": "08cb4e1a-cbbe-4075-86a1-9362924867a6" }
   ],
+  // Not secret: the Zero Trust team that signs /admin logins (shown on the Access login page).
+  "vars": { "ACCESS_TEAM_DOMAIN": "blue-mouse-2582.cloudflareaccess.com" },
   "keep_vars": true,
   "observability": { "enabled": true }
 }
